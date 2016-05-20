@@ -43,14 +43,15 @@ var methods = {
         weight = arg(weight, 1);
 
         var data = this.data,
-            i;
-        for (i = 1; i < data.length - 2; i++) {
-            var prev    = data[i - 1],
-                current = data[i],
+            i,
+            prev = data[0];
+        for (i = 1; i < data.length - 1; i++) {
+            var current = data[i],
                 next    = data[i + 1],
                 total   = 2 + weight;
             current = current * weight;
             data[i] = (prev + current + next) / total;
+            prev = current;
         }
         return this;
     },
