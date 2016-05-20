@@ -1,5 +1,5 @@
 'use strict';
-/* global $, oneDHeightMap */
+/* global $, oneDHeightmap */
 
 var SCALE = 4;
 var DEBUG = false;
@@ -51,7 +51,7 @@ var display = function(settings) {
     var ctx    = canvas.getContext('2d');
 
     if (s.original) {
-        oneDHeightMap.draw({
+        oneDHeightmap.draw({
             heightmap: s.original,
             ctx:       ctx,
             x:         0,
@@ -62,7 +62,7 @@ var display = function(settings) {
             debug:     s.debug,
         });
     }
-    oneDHeightMap.draw({
+    oneDHeightmap.draw({
         heightmap: s.heightmap,
         ctx:       ctx,
         x:         0,
@@ -75,7 +75,7 @@ var display = function(settings) {
 };
 
 // create orginal
-var hm = oneDHeightMap.create({
+var hm = oneDHeightmap.create({
     length:    hmLength,
     maxHeight: hmMaxHeight,
 });
@@ -99,7 +99,7 @@ display({
 
 display({
     original:  hm,
-    heightmap: hm.copy().smooth(),
+    heightmap: hm.copy().smooth().distort().dripByHeight().shrink(),
     label:     'smooth()'
 });
 
@@ -182,5 +182,40 @@ display({
     label:     'generateArc()'
 });
 
+
+
+
+
+var canvas = document.createElement('canvas');
+canvas.width = 400;
+canvas.height = 200;
+document.body.appendChild(canvas);
+var ctx = canvas.getContext('2d');
+
+var hm = oneDHeightmap.create({
+    length:    400,
+    maxHeight: 200,
+});
+
+// generate height map data
+hm.generateHill({
+    startHeight:       1,
+    endHeight:         1,
+    variance:          3,
+    edgeDeflectMargin: 0.25,
+    deviationChance:   0.9,
+    endTaperMargin:    10,
+    startTaperMargin:  20,
+});
+
+
+oneDHeightmap.draw({
+            heightmap: hm,
+            ctx:       ctx,
+            x:         0,
+            y:         0,
+            direction: 'up',
+            color:     'blue',
+        });
 
 

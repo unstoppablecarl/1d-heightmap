@@ -14,8 +14,8 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "browserify src/index.js --debug --standalone oneDHeightMap | exorcist dist/1d-heightmap.js.map > dist/1d-heightmap.js",
-    "watch": "watchify src/index.js --debug --standalone oneDHeightMap -v -o 'exorcist dist/1d-heightmap.js.map > dist/1d-heightmap.js'"
+    "build": "browserify src/index.js --debug --standalone oneDHeightmap | exorcist dist/1d-heightmap.js.map > dist/1d-heightmap.js",
+    "watch": "watchify src/index.js --debug --standalone oneDHeightmap -v -o 'exorcist dist/1d-heightmap.js.map > dist/1d-heightmap.js'"
   },
   "devDependencies": {
     "browserify": "^13.0.1",
