@@ -1,0 +1,16 @@
+body {
+    font-family: sans-serif;
+}
+
+.example {
+    display: inline-block;
+    background: #ccc;
+    border: 1px solid #808080;
+    padding: 10px;
+    margin: 10px;
+}
+
+canvas {
+    background: #fff;
+    border: 1px solid #808080;
+}

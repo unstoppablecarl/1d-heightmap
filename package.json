@@ -1,0 +1,25 @@
+{
+  "name": "1d-heightmap",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unstoppablecarl/1d-heightmap"
+  },
+  "description": "Procedurally generate and manipulate 1 dimensional heightmaps",
+  "main": "index.js",
+  "author": "Carl Olsen <unstoppablecarlolsen@gmail.com>",
+  "keywords": [
+    "procedural generation",
+    "heightmap"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "browserify src/index.js --debug --standalone oneDHeightMap | exorcist dist/1d-heightmap.js.map > dist/1d-heightmap.js",
+    "watch": "watchify src/index.js --debug --standalone oneDHeightMap -v -o 'exorcist dist/1d-heightmap.js.map > dist/1d-heightmap.js'"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.1",
+    "exorcist": "^0.4.0",
+    "watchify": "^3.7.0"
+  }
+}
