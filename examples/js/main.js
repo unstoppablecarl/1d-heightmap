@@ -99,7 +99,7 @@ display({
 
 display({
     original:  hm,
-    heightmap: hm.copy().smooth().distort().dripByHeight().shrink(),
+    heightmap: hm.copy().smooth(),
     label:     'smooth()'
 });
 
