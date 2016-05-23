@@ -97,6 +97,11 @@ module.exports = methods;
 var arg = require('../util').arg;
 
 var methods = {
+    generateRandom: function(){
+        return this.mapEach(function(val, i) {
+            return this.rngRange(this.minHeight, this.maxHeight);
+        });
+    },
     generateArc: function(ratio) {
         ratio = arg(ratio, this.maxHeight / this.data.length);
 
@@ -279,6 +284,12 @@ var methods = {
     getMax: function() {
         return Math.max.apply(null, this.data);
     },
+    getRange: function(){
+        return this.getMax() - this.getMin();
+    },
+    getMaxRange: function(){
+        return this.maxHeight - this.minHeight;
+    },
     getRandomSpacedPositions: function(minSpacing, maxSpacing) {
         minSpacing = arg(minSpacing, this.data.length * 0.1);
         maxSpacing = arg(maxSpacing, this.data.length * 0.3);
@@ -306,7 +317,15 @@ var methods = {
 
         var s = Object.assign({}, this.factory.defaults, settings);
 
-        this.data      = s.data || new Array(s.length);
+        this.data = s.data;
+
+        if (!this.data) {
+            this.data = [];
+            for (var i = 0; i < s.length; i++) {
+                this.data[i] = 0;
+            }
+        }
+
         this.minHeight = s.minHeight;
         this.maxHeight = s.maxHeight;
 
@@ -332,14 +351,13 @@ module.exports = methods;
 var arg = require('../util').arg;
 
 var methods = {
-    /** Higher order functions */
     each: function(func, context) {
         context = arg(context, this);
 
         this.data.forEach(func, context);
         return this;
     },
-    map: function(func, context){
+    map: function(func, context) {
         return this.copy({
             data: this.data.map(func, context)
         });
@@ -364,6 +382,15 @@ var methods = {
         }
         return this;
     },
+    adjustEvery: function(interval, func) {
+        return this.mapEach(function(val, i, arr) {
+            if (i % interval === 0) {
+                return func(val, i, arr);
+            } else {
+                return val;
+            }
+        });
+    }
 };
 module.exports = methods;
 
@@ -419,19 +446,60 @@ var methods = {
         var ratio = maxHeight / this.getMax();
         return this.multiply(ratio);
     },
+    scaleLengthTo: function(newLenght, interpolateFunc) {
+        var data      = this.data;
+        var percent   = (newLenght - 1) / (data.length - 1);
+        var keyPoints = [];
+
+        data.forEach(function(val, index) {
+            keyPoints.push({
+                index: Math.ceil(index * percent),
+                value: val
+            });
+        });
+
+        var results = [];
+
+        keyPoints.forEach(function(item, index) {
+
+            results.push(item.value);
+
+            if (index === keyPoints.length - 1) {
+                return;
+            }
+
+            var nextItem     = keyPoints[index + 1];
+            var currentIndex = item.index;
+            var nextIndex    = nextItem.index;
+            var chunk        = nextIndex - currentIndex;
+
+            var a = item.value;
+            var b = nextItem.value;
+
+            for (var i = 0; i < chunk; i++) {
+                var x = i / chunk;
+                results.push(interpolateFunc(a, b, x));
+            }
+        });
+
+        this.data = results;
+
+        return this;
+    },
 
     smooth: function(weight) {
         weight = arg(weight, 1);
 
         var data = this.data,
-            i;
-        for (i = 1; i < data.length - 2; i++) {
-            var prev    = data[i - 1],
-                current = data[i],
+            i,
+            prev = data[0];
+        for (i = 1; i < data.length - 1; i++) {
+            var current = data[i],
                 next    = data[i + 1],
                 total   = 2 + weight;
             current = current * weight;
             data[i] = (prev + current + next) / total;
+            prev    = current;
         }
         return this;
     },
@@ -509,7 +577,7 @@ var methods = {
 
     adjustRandomSpacedPositions: function(minSpacing, maxSpacing, func) {
         var indexes = this.getRandomSpacedPositions(minSpacing, maxSpacing);
-        indexes.forEach(function(i){
+        indexes.forEach(function(i) {
             this.data[i] = func(this.data[i], i, this.data);
         }, this);
     },
@@ -665,6 +733,22 @@ var arg = function(val, defaultVal) {
 
 module.exports = {
     arg: arg,
+
+    getRandomSpacedPositions: function(array, minSpacing, maxSpacing) {
+        minSpacing = arg(minSpacing, array.length * 0.1);
+        maxSpacing = arg(maxSpacing, array.length * 0.3);
+
+        var positions = [];
+        var next      = this.rngRange(minSpacing, maxSpacing);
+
+        for (var i = 0; i < array.length; i++) {
+            if (i == next) {
+                positions.push(i);
+                next = i + this.rngRange(minSpacing, maxSpacing);
+            }
+        }
+        return positions;
+    },
 };
 },{}]},{},[2])(2)
 });
