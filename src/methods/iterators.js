@@ -3,14 +3,13 @@
 var arg = require('../util').arg;
 
 var methods = {
-    /** Higher order functions */
     each: function(func, context) {
         context = arg(context, this);
 
         this.data.forEach(func, context);
         return this;
     },
-    map: function(func, context){
+    map: function(func, context) {
         return this.copy({
             data: this.data.map(func, context)
         });
@@ -35,5 +34,14 @@ var methods = {
         }
         return this;
     },
+    adjustEvery: function(interval, func) {
+        return this.mapEach(function(val, i, arr) {
+            if (i % interval === 0) {
+                return func(val, i, arr);
+            } else {
+                return val;
+            }
+        });
+    }
 };
 module.exports = methods;
