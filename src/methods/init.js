@@ -5,7 +5,15 @@ var methods = {
 
         var s = Object.assign({}, this.factory.defaults, settings);
 
-        this.data      = s.data || new Array(s.length);
+        this.data = s.data;
+
+        if (!this.data) {
+            this.data = [];
+            for (var i = 0; i < s.length; i++) {
+                this.data[i] = 0;
+            }
+        }
+
         this.minHeight = s.minHeight;
         this.maxHeight = s.maxHeight;
 
