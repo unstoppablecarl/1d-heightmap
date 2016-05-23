@@ -38,6 +38,46 @@ var methods = {
         var ratio = maxHeight / this.getMax();
         return this.multiply(ratio);
     },
+    scaleLengthTo: function(newLenght, interpolateFunc) {
+        var data      = this.data;
+        var percent   = (newLenght - 1) / (data.length - 1);
+        var keyPoints = [];
+
+        data.forEach(function(val, index) {
+            keyPoints.push({
+                index: Math.ceil(index * percent),
+                value: val
+            });
+        });
+
+        var results = [];
+
+        keyPoints.forEach(function(item, index) {
+
+            results.push(item.value);
+
+            if (index === keyPoints.length - 1) {
+                return;
+            }
+
+            var nextItem     = keyPoints[index + 1];
+            var currentIndex = item.index;
+            var nextIndex    = nextItem.index;
+            var chunk        = nextIndex - currentIndex;
+
+            var a = item.value;
+            var b = nextItem.value;
+
+            for (var i = 0; i < chunk; i++) {
+                var x = i / chunk;
+                results.push(interpolateFunc(a, b, x));
+            }
+        });
+
+        this.data = results;
+
+        return this;
+    },
 
     smooth: function(weight) {
         weight = arg(weight, 1);
@@ -51,7 +91,7 @@ var methods = {
                 total   = 2 + weight;
             current = current * weight;
             data[i] = (prev + current + next) / total;
-            prev = current;
+            prev    = current;
         }
         return this;
     },
@@ -129,7 +169,7 @@ var methods = {
 
     adjustRandomSpacedPositions: function(minSpacing, maxSpacing, func) {
         var indexes = this.getRandomSpacedPositions(minSpacing, maxSpacing);
-        indexes.forEach(function(i){
+        indexes.forEach(function(i) {
             this.data[i] = func(this.data[i], i, this.data);
         }, this);
     },
