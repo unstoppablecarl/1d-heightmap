@@ -3,6 +3,11 @@
 var arg = require('../util').arg;
 
 var methods = {
+    generateRandom: function(){
+        return this.mapEach(function(val, i) {
+            return this.rngRange(this.minHeight, this.maxHeight);
+        });
+    },
     generateArc: function(ratio) {
         ratio = arg(ratio, this.maxHeight / this.data.length);
 
