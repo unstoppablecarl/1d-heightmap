@@ -10,6 +10,12 @@ var methods = {
     getMax: function() {
         return Math.max.apply(null, this.data);
     },
+    getRange: function(){
+        return this.getMax() - this.getMin();
+    },
+    getMaxRange: function(){
+        return this.maxHeight - this.minHeight;
+    },
     getRandomSpacedPositions: function(minSpacing, maxSpacing) {
         minSpacing = arg(minSpacing, this.data.length * 0.1);
         maxSpacing = arg(maxSpacing, this.data.length * 0.3);
