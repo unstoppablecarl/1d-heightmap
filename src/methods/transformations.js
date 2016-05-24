@@ -43,15 +43,23 @@ var methods = {
         var percent   = (newLenght - 1) / (data.length - 1);
         var keyPoints = [];
 
+        var prevIndex;
         data.forEach(function(val, index) {
+
+            var newIndex = Math.ceil(index * percent)
+
+            if (newIndex == prevIndex) {
+                return;
+            }
             keyPoints.push({
-                index: Math.ceil(index * percent),
+                index: newIndex,
                 value: val
             });
+
+            prevIndex = newIndex;
         });
 
         var results = [];
-
         keyPoints.forEach(function(item, index) {
 
             results.push(item.value);
@@ -64,13 +72,13 @@ var methods = {
             var currentIndex = item.index;
             var nextIndex    = nextItem.index;
             var chunk        = nextIndex - currentIndex;
-
-            var a = item.value;
-            var b = nextItem.value;
+            var a            = item.value;
+            var b            = nextItem.value;
 
             for (var i = 0; i < chunk; i++) {
-                var x = i / chunk;
-                results.push(interpolateFunc(a, b, x));
+                var x      = i / chunk;
+                var newVal = interpolateFunc(a, b, x);
+                results.push(newVal);
             }
         });
 
