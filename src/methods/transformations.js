@@ -173,6 +173,15 @@ var methods = {
             this.data[i] = func(this.data[i], i, this.data);
         }, this);
     },
+    adjustEvery: function(interval, func) {
+        return this.mapEach(function(val, i, arr) {
+            if (i % interval === 0) {
+                return func(val, i, arr);
+            } else {
+                return val;
+            }
+        });
+    }
 
 };
 module.exports = methods;

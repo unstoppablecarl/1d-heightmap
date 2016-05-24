@@ -34,14 +34,6 @@ var methods = {
         }
         return this;
     },
-    adjustEvery: function(interval, func) {
-        return this.mapEach(function(val, i, arr) {
-            if (i % interval === 0) {
-                return func(val, i, arr);
-            } else {
-                return val;
-            }
-        });
-    }
+
 };
 module.exports = methods;
