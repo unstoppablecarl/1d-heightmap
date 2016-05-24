@@ -1,6 +1,16 @@
 'use strict';
 
 var methods = {
+    /**
+     * Initialzie 1dHeightmap object.
+     * @method init
+     * @param {Object} [settings] - Settings object.
+     * @param {Number} [settings.length] - Length of height map.
+     * @param {Array}  [settings.data] - Length of height map. If set, settings.length is ignored.
+     * @param {Number} [settings.minHeight] - Min Height of height map.
+     * @param {Number} [settings.maxHeight] - Max Height of height map.
+     * @return {Object} Initialized 1dHeightmap object.
+     */
     init: function(settings) {
 
         var s = Object.assign({}, this.factory.defaults, settings);

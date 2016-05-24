@@ -16,7 +16,6 @@ factory.methods = Object.assign(
         factory: factory
     },
     require('./methods/compositions'),
-    require('./methods/generators'),
     require('./methods/getters'),
     require('./methods/init'),
     require('./methods/iterators'),

@@ -10,24 +10,36 @@ var methods = {
     getMax: function() {
         return Math.max.apply(null, this.data);
     },
-    getRange: function(){
+    getRange: function() {
         return this.getMax() - this.getMin();
     },
-    getMaxRange: function(){
+    getMaxRange: function() {
         return this.maxHeight - this.minHeight;
     },
-    getRandomSpacedPositions: function(minSpacing, maxSpacing) {
-        minSpacing = arg(minSpacing, this.data.length * 0.1);
-        maxSpacing = arg(maxSpacing, this.data.length * 0.3);
+    getRandomSpacedPositions: function(minSpacing, maxSpacing, includeFirst, includeLast) {
+        minSpacing   = arg(minSpacing, this.data.length * 0.1);
+        maxSpacing   = arg(maxSpacing, this.data.length * 0.3);
+        includeFirst = arg(includeFirst, false);
+        includeLast  = arg(includeLast, false);
+
+        minSpacing = Math.max(1, minSpacing);
+        maxSpacing = Math.max(1, maxSpacing);
 
         var positions = [];
-        var next      = this.rngRange(minSpacing, maxSpacing);
+
+        if (includeFirst) {
+            positions.push(0);
+        }
+        var next = this.rngRange(minSpacing, maxSpacing);
 
         for (var i = 0; i < this.data.length; i++) {
             if (i == next) {
                 positions.push(i);
                 next = i + this.rngRange(minSpacing, maxSpacing);
             }
+        }
+        if (includeLast) {
+            positions.push(this.data.length - 1);
         }
         return positions;
     },
