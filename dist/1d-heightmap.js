@@ -929,7 +929,8 @@ var methods = {
 module.exports = methods;
 },{"../util":12}],9:[function(require,module,exports){
 'use strict';
-var arg = require('../util').arg;
+var arg       = require('../util').arg;
+var makeArray = require('../util').makeArray;
 
 var rng                 = require('../rng');
 var random              = rng.float;
@@ -1143,40 +1144,24 @@ var methods = {
             }
         });
     },
-    turbulence: function(variance, min, max) {
-        min = arg(min, 0.5);
-        max = arg(max, 0.5);
+    cluster: function(range, weight) {
+        range  = arg(range, 1);
+        weight = arg(weight, 1);
 
         return this.mapEach(function(val, i, data) {
-            var prev = data[i - 1];
-            var next = data[i + 1];
 
-            if(prev === undefined || next === undefined){
-                return val
-            }
+            var minR = i - range;
+            var maxR = i + range + 1;
 
-            // trending up
-            if(prev < val && val < next){
-                return val + 10;
-            }
-            // trending down
-            else if(prev > val && val > next){
-                    return val + 10;
-            }
+            var minI = Math.max(minR, 0);
+            var maxI = Math.min(maxR, data.length);
 
-            return 0;
-            // if (
-            //     random() < min
-            // ) {
-            //     return val + variance;
-            // } else if (
-            //     random() < max
-            // ) {
-            //     // return val - variance;
-            //     return val;
-            // }
+            var nodes = data.slice(minI, maxI);
 
-            // return val;
+            var min = (Math.min.apply(null, nodes) + val * weight) / (1 + weight);
+            var max = (Math.max.apply(null, nodes) + val * weight) / (1 + weight);
+
+            return randomRange(min, max);
         });
     }
 };

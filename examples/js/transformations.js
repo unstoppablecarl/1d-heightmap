@@ -135,6 +135,14 @@
     display({
         heightmap: hm,
         transform: function(hm) {
+            hm.cluster(6, 6);
+        },
+        label: 'cluster(6, 6)'
+    });
+
+    display({
+        heightmap: hm,
+        transform: function(hm) {
             hm.adjustRandomSpacedPositions(2, 10, function(val) {
                 return val + 10;
             });
