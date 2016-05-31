@@ -193,7 +193,6 @@ var generators = {
         var endTaperMargin = arg(s.endTaperMargin, max * 0.25);
         var endTaperHeight;
         var endMinTaperHeight;
-        console.log('endTaperMargin', endTaperMargin);
 
         var length            = hm.data.length;
         var prevHeight        = startHeight;
@@ -275,7 +274,6 @@ var generators = {
                 random() < endTaperRatio - 0.5
             ) {
                 height = absoluteMax;
-                console.log(absoluteMax);
             }
 
             // pull away from absoluteMin, percentOfMargin = (heightRatio * (1 /edgeMargin))
