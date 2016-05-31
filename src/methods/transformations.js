@@ -127,13 +127,13 @@ var methods = {
     weightedRatioAdjustment: function(height, variance, ratioWeight, func) {
         height      = arg(height, this.max() * 0.1);
         ratioWeight = arg(ratioWeight, 1);
-        variance = arg(variance, 0.33);
+        variance    = arg(variance, 0.33);
 
         return this.mapEach(function(height, i, data) {
-            var ratio      = (height / this.max()) * ratioWeight;
+            var ratio          = (height / this.max()) * ratioWeight;
             var randomVariance = random() * variance;
-            var percent    = (randomVariance + ratio) / (1 + ratioWeight);
-            var adjustment = (percent * height);
+            var percent        = (randomVariance + ratio) / (1 + ratioWeight);
+            var adjustment     = (percent * height);
             return func(height, adjustment);
         });
     },
@@ -213,21 +213,41 @@ var methods = {
             }
         });
     },
-    turbulence: function(){
-        // if (
-        //         minDeflectRatio !== false &&
-        //         random() < minDeflectRatio
-        //     ) {
-        //         height += variance;
-        //     } else if (
-        //         maxDeflectRatio !== false &&
-        //         random() < maxDeflectRatio
-        //     ) {
-        //         height -= variance;
-        //     }
-        //       var lowVariance  = prevHeight - variance,
-        //         highVariance = prevHeight + variance;
-    }
+    turbulence: function(variance, min, max) {
+        min = arg(min, 0.5);
+        max = arg(max, 0.5);
 
+        return this.mapEach(function(val, i, data) {
+            var prev = data[i - 1];
+            var next = data[i + 1];
+
+            if(prev === undefined || next === undefined){
+                return val
+            }
+
+            // trending up
+            if(prev < val && val < next){
+                return val + 10;
+            }
+            // trending down
+            else if(prev > val && val > next){
+                    return val + 10;
+            }
+
+            return 0;
+            // if (
+            //     random() < min
+            // ) {
+            //     return val + variance;
+            // } else if (
+            //     random() < max
+            // ) {
+            //     // return val - variance;
+            //     return val;
+            // }
+
+            // return val;
+        });
+    }
 };
 module.exports = methods;

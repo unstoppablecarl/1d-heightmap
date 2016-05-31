@@ -432,6 +432,8 @@ var generators = {
             interpolator: null,
             min:          0,
             max:          100,
+            minChange:    undefined,
+            maxChange:    undefined,
         };
 
         var s = Object.assign({}, defaults, settings);
@@ -443,31 +445,67 @@ var generators = {
         var maxSpacing  = arg(s.maxSpacing, length * 0.1);
         var minHeight   = s.min;
         var maxHeight   = s.max;
+        var minChange   = s.minChange;
+        var maxChange   = s.maxChange;
 
-        var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing);
+        var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing, true);
 
-        var out = keyIndexes.map(function(index, i) {
+        var getValue = function(prev) {
+            var min = minHeight;
+            var max = maxHeight;
 
-            var value = randomRange(minHeight, maxHeight);
-            if (i === 0) {
-                value = arg(startHeight, value);
+
+            if (prev !== undefined) {
+
+                var positive = random() < 0.5;
+
+                if (positive) {
+
+                    if (minChange !== undefined) {
+                        min = Math.min(max, prev + minChange);
+                    }
+
+                    if (maxChange !== undefined) {
+                        max = Math.min(max, prev + maxChange);
+                    }
+                } else {
+
+                    if (minChange !== undefined) {
+                        min = Math.max(min, prev - maxChange);
+                    }
+
+                    if (maxChange !== undefined) {
+                        max = Math.max(min, prev - minChange);
+                    }
+                }
             }
+
+            return randomRange(min, max);
+        };
+
+        var prev;
+
+        var out = keyIndexes.map(function(index, i, data) {
+            var value;
+
+            if (i === 0 && startHeight !== undefined) {
+                value = startHeight;
+            } else {
+                value = getValue(prev);
+            }
+
+            prev = value;
+
             return {
                 index: index,
                 value: value,
             };
         });
 
-        var last = out[out.length - 1];
-
-
-        if (last.index < length - 1) {
-            var endValue = arg(endHeight, randomRange(minHeight, maxHeight));
-            out.push({
-                index: length - 1,
-                value: endValue
-            });
+        if (endHeight !== undefined) {
+            out[out.length - 1].value = endHeight;
         }
+
         return out;
     },
     interpolateKeyIndexes: function(keyIndexes, interpolator) {
@@ -518,9 +556,9 @@ var generators = {
             debug:            false,
         };
 
-        var s = Object.assign({}, defaults, settings);
-        var min               = s.min;
-        var max               = s.max;
+        var s   = Object.assign({}, defaults, settings);
+        var min = s.min;
+        var max = s.max;
 
         var debug            = s.debug;
         var startHeight      = arg(s.startHeight, min);
@@ -532,7 +570,6 @@ var generators = {
         var endTaperMargin = arg(s.endTaperMargin, max * 0.25);
         var endTaperHeight;
         var endMinTaperHeight;
-        console.log('endTaperMargin', endTaperMargin);
 
         var length            = hm.data.length;
         var prevHeight        = startHeight;
@@ -614,7 +651,6 @@ var generators = {
                 random() < endTaperRatio - 0.5
             ) {
                 height = absoluteMax;
-                console.log(absoluteMax);
             }
 
             // pull away from absoluteMin, percentOfMargin = (heightRatio * (1 /edgeMargin))
@@ -1021,13 +1057,13 @@ var methods = {
     weightedRatioAdjustment: function(height, variance, ratioWeight, func) {
         height      = arg(height, this.max() * 0.1);
         ratioWeight = arg(ratioWeight, 1);
-        variance = arg(variance, 0.33);
+        variance    = arg(variance, 0.33);
 
         return this.mapEach(function(height, i, data) {
-            var ratio      = (height / this.max()) * ratioWeight;
+            var ratio          = (height / this.max()) * ratioWeight;
             var randomVariance = random() * variance;
-            var percent    = (randomVariance + ratio) / (1 + ratioWeight);
-            var adjustment = (percent * height);
+            var percent        = (randomVariance + ratio) / (1 + ratioWeight);
+            var adjustment     = (percent * height);
             return func(height, adjustment);
         });
     },
@@ -1107,22 +1143,42 @@ var methods = {
             }
         });
     },
-    turbulence: function(){
-        // if (
-        //         minDeflectRatio !== false &&
-        //         random() < minDeflectRatio
-        //     ) {
-        //         height += variance;
-        //     } else if (
-        //         maxDeflectRatio !== false &&
-        //         random() < maxDeflectRatio
-        //     ) {
-        //         height -= variance;
-        //     }
-        //       var lowVariance  = prevHeight - variance,
-        //         highVariance = prevHeight + variance;
-    }
+    turbulence: function(variance, min, max) {
+        min = arg(min, 0.5);
+        max = arg(max, 0.5);
 
+        return this.mapEach(function(val, i, data) {
+            var prev = data[i - 1];
+            var next = data[i + 1];
+
+            if(prev === undefined || next === undefined){
+                return val
+            }
+
+            // trending up
+            if(prev < val && val < next){
+                return val + 10;
+            }
+            // trending down
+            else if(prev > val && val > next){
+                    return val + 10;
+            }
+
+            return 0;
+            // if (
+            //     random() < min
+            // ) {
+            //     return val + variance;
+            // } else if (
+            //     random() < max
+            // ) {
+            //     // return val - variance;
+            //     return val;
+            // }
+
+            // return val;
+        });
+    }
 };
 module.exports = methods;
 },{"../rng":11,"../util":12}],10:[function(require,module,exports){

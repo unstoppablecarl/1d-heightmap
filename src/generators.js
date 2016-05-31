@@ -93,6 +93,8 @@ var generators = {
             interpolator: null,
             min:          0,
             max:          100,
+            minChange:    undefined,
+            maxChange:    undefined,
         };
 
         var s = Object.assign({}, defaults, settings);
@@ -104,31 +106,67 @@ var generators = {
         var maxSpacing  = arg(s.maxSpacing, length * 0.1);
         var minHeight   = s.min;
         var maxHeight   = s.max;
+        var minChange   = s.minChange;
+        var maxChange   = s.maxChange;
 
-        var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing);
+        var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing, true);
 
-        var out = keyIndexes.map(function(index, i) {
+        var getValue = function(prev) {
+            var min = minHeight;
+            var max = maxHeight;
 
-            var value = randomRange(minHeight, maxHeight);
-            if (i === 0) {
-                value = arg(startHeight, value);
+
+            if (prev !== undefined) {
+
+                var positive = random() < 0.5;
+
+                if (positive) {
+
+                    if (minChange !== undefined) {
+                        min = Math.min(max, prev + minChange);
+                    }
+
+                    if (maxChange !== undefined) {
+                        max = Math.min(max, prev + maxChange);
+                    }
+                } else {
+
+                    if (minChange !== undefined) {
+                        min = Math.max(min, prev - maxChange);
+                    }
+
+                    if (maxChange !== undefined) {
+                        max = Math.max(min, prev - minChange);
+                    }
+                }
             }
+
+            return randomRange(min, max);
+        };
+
+        var prev;
+
+        var out = keyIndexes.map(function(index, i, data) {
+            var value;
+
+            if (i === 0 && startHeight !== undefined) {
+                value = startHeight;
+            } else {
+                value = getValue(prev);
+            }
+
+            prev = value;
+
             return {
                 index: index,
                 value: value,
             };
         });
 
-        var last = out[out.length - 1];
-
-
-        if (last.index < length - 1) {
-            var endValue = arg(endHeight, randomRange(minHeight, maxHeight));
-            out.push({
-                index: length - 1,
-                value: endValue
-            });
+        if (endHeight !== undefined) {
+            out[out.length - 1].value = endHeight;
         }
+
         return out;
     },
     interpolateKeyIndexes: function(keyIndexes, interpolator) {
@@ -179,9 +217,9 @@ var generators = {
             debug:            false,
         };
 
-        var s = Object.assign({}, defaults, settings);
-        var min               = s.min;
-        var max               = s.max;
+        var s   = Object.assign({}, defaults, settings);
+        var min = s.min;
+        var max = s.max;
 
         var debug            = s.debug;
         var startHeight      = arg(s.startHeight, min);
