@@ -63,7 +63,7 @@ rules:
 
   # Strict Mode
   # https://github.com/eslint/eslint/tree/master/docs/rules#strict-mode
-  strict: [2, "global"]
+  strict: [2, "safe"]
 
 # Global scoped method and vars
 globals:

@@ -1,7 +1,28 @@
 'use strict';
 var arg = require('../util').arg;
 
+var rng                 = require('../rng');
+var random              = rng.float;
+var randomRange         = rng.range;
+var randomSpacedIndexes = rng.spacedIndexes;
+
 var methods = {
+    clamp: function(minValue, maxValue) {
+        return this.mapEach(function(val) {
+            val = Math.min(val, maxValue);
+            return Math.max(val, minValue);
+        })
+    },
+    clampMax: function(maxValue) {
+        return this.mapEach(function(val) {
+            return Math.min(val, maxValue);
+        })
+    },
+    clampMin: function(minValue) {
+        return this.mapEach(function(val) {
+            return Math.max(val, minValue);
+        })
+    },
     add: function(val) {
         return this.mapEach(function(v) {
             return v + val;
@@ -27,15 +48,15 @@ var methods = {
     },
     invert: function() {
         return this.mapEach(function(val) {
-            return this.maxHeight - val;
+            return this.max() - val;
         });
     },
     reverse: function() {
         this.data.reverse();
         return this;
     },
-    scaleToNewMaxHeight: function(maxHeight) {
-        var ratio = maxHeight / this.getMax();
+    scaleToHeight: function(maxHeight) {
+        var ratio = maxHeight / this.max();
         return this.multiply(ratio);
     },
     scaleLengthTo: function(newLenght, interpolateFunc) {
@@ -58,7 +79,6 @@ var methods = {
 
             prevIndex = newIndex;
         });
-
         var results = [];
         keyPoints.forEach(function(item, index) {
 
@@ -71,7 +91,7 @@ var methods = {
             var nextItem     = keyPoints[index + 1];
             var currentIndex = item.index;
             var nextIndex    = nextItem.index;
-            var chunk        = nextIndex - currentIndex;
+            var chunk        = nextIndex - currentIndex - 1;
             var a            = item.value;
             var b            = nextItem.value;
 
@@ -104,29 +124,33 @@ var methods = {
         return this;
     },
     /** RNG transforms */
-    weightedRatioAdjustment: function(height, ratioWeight, func) {
-        height      = arg(height, this.maxHeight * 0.1);
+    weightedRatioAdjustment: function(height, variance, ratioWeight, func) {
+        height      = arg(height, this.max() * 0.1);
         ratioWeight = arg(ratioWeight, 1);
+        variance = arg(variance, 0.33);
 
         return this.mapEach(function(height, i, data) {
-            var ratio      = (height / this.maxHeight) * ratioWeight;
-            var percent    = (this.rng() + ratio) / (1 + ratioWeight);
+            var ratio      = (height / this.max()) * ratioWeight;
+            var randomVariance = random() * variance;
+            var percent    = (randomVariance + ratio) / (1 + ratioWeight);
             var adjustment = (percent * height);
             return func(height, adjustment);
         });
     },
-    shrink: function(shrinkHeight, shrinkHeightRatioWeight) {
+    shrink: function(shrinkHeight, variance, shrinkHeightRatioWeight) {
         return this.weightedRatioAdjustment(
             shrinkHeight,
+            variance,
             shrinkHeightRatioWeight,
             function(val, adjustment) {
                 return val - adjustment;
             }
         );
     },
-    grow: function(growHeight, growHeightRatioWeight) {
+    grow: function(growHeight, variance, growHeightRatioWeight) {
         return this.weightedRatioAdjustment(
             growHeight,
+            variance,
             growHeightRatioWeight,
             function(val, adjustment) {
                 return val + adjustment;
@@ -134,14 +158,14 @@ var methods = {
         );
     },
     drip: function(minLength, maxLength, chance) {
-        minLength = arg(minLength, this.maxHeight * 0.25);
-        maxLength = arg(maxLength, this.maxHeight * 0.75);
+        minLength = arg(minLength, this.max() * 0.25);
+        maxLength = arg(maxLength, this.max() * 0.75);
         chance    = arg(chance, 0.45);
 
         return this.mapEach(function(val) {
-            if (this.rng() < chance) {
-                var newVal = val + this.rng() * (maxLength - minLength) + minLength;
-                return Math.min(this.maxHeight, newVal);
+            if (random() < chance) {
+                var newVal = val + random() * (maxLength - minLength) + minLength;
+                return newVal;
             }
             return val;
         });
@@ -153,30 +177,29 @@ var methods = {
         percentVarianceHeightRatioWeight = arg(percentVarianceHeightRatioWeight, 1);
 
         return this.mapEach(function(val) {
-            var heightRatio    = val / this.maxHeight;
+            var heightRatio    = val / this.max();
             var frequencyTotal = 1 + frequencyHeightRatioWeight;
             var finalChance    = (frequency + heightRatio * frequencyHeightRatioWeight) / frequencyTotal;
 
-            if (this.rng() < finalChance) {
+            if (random() < finalChance) {
                 var varianceTotal = 1 + percentVarianceHeightRatioWeight,
                     finalVariance = (percentVariance + heightRatio * percentVarianceHeightRatioWeight) / varianceTotal;
 
-                var newVal = val + this.rng() * (this.maxHeight * finalVariance);
-                return Math.min(this.maxHeight, newVal);
+                var newVal = val + random() * (this.max() * finalVariance);
+                return newVal;
             }
             return val;
         });
     },
     distort: function(variance) {
-        variance = arg(variance, 0.2 * this.maxHeight);
+        variance = arg(variance, 0.2 * this.max());
 
         return this.mapEach(function(val) {
-            return val + (this.rng() * variance) - variance * 0.5;
+            return val + (random() * variance) - variance * 0.5;
         });
     },
-
     adjustRandomSpacedPositions: function(minSpacing, maxSpacing, func) {
-        var indexes = this.getRandomSpacedPositions(minSpacing, maxSpacing);
+        var indexes = randomSpacedIndexes(this.data.length, minSpacing, maxSpacing);
         indexes.forEach(function(i) {
             this.data[i] = func(this.data[i], i, this.data);
         }, this);
@@ -189,6 +212,21 @@ var methods = {
                 return val;
             }
         });
+    },
+    turbulence: function(){
+        // if (
+        //         minDeflectRatio !== false &&
+        //         random() < minDeflectRatio
+        //     ) {
+        //         height += variance;
+        //     } else if (
+        //         maxDeflectRatio !== false &&
+        //         random() < maxDeflectRatio
+        //     ) {
+        //         height -= variance;
+        //     }
+        //       var lowVariance  = prevHeight - variance,
+        //         highVariance = prevHeight + variance;
     }
 
 };

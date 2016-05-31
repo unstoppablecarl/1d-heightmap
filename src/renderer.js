@@ -1,6 +1,5 @@
 'use strict';
 
-
 function draw(settings) {
     var defaults = {
         heightmap:   null,
@@ -41,11 +40,11 @@ function draw(settings) {
         ctx.fillStyle = color;
         if (direction === 'up') {
             x = rx + i * columnWidth;
-            y = ry + heightmap.maxHeight - height;
+            y = ry - height;
             w = columnWidth;
             h = height;
         } else if (direction === 'left') {
-            x = rx + heightmap.maxHeight - height;
+            x = rx - height;
             y = ry + i * columnWidth;
             w = height;
             h = columnWidth;
@@ -114,10 +113,9 @@ function debugDraw(heightmap, ctx, x, y, direction, scale, val, color) {
         dy = y;
 
     if (direction === 'up') {
-        dy = y + heightmap.maxHeight - val;
-
+        dy = y - val;
     } else if (direction === 'left') {
-        dx = x + heightmap.maxHeight - val;
+        dx = x + heightmap.max() - val;
 
     } else if (direction === 'right') {
         dx = x + val;

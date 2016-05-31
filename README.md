@@ -17,11 +17,10 @@ var ctx = canvas.getContext('2d');
 // make a heightmap
 var hm = oneDHeightmap.create({
     length:    400,
-    maxHeight: 200,
 });
 
 // generate height map data
-hm.generateHill({
+hm.generate.rough({
     startHeight:       1,
     endHeight:         1,
     variance:          3,

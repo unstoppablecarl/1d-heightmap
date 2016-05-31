@@ -1,45 +1,363 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.oneDHeightmap = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.linear = linear;
+exports.easeInSine = easeInSine;
+exports.easeOutSine = easeOutSine;
+exports.easeInOutSine = easeInOutSine;
+exports.easeInQuad = easeInQuad;
+exports.easeOutQuad = easeOutQuad;
+exports.easeInOutQuad = easeInOutQuad;
+exports.easeInCubic = easeInCubic;
+exports.easeOutCubic = easeOutCubic;
+exports.easeInOutCubic = easeInOutCubic;
+exports.easeInQuart = easeInQuart;
+exports.easeOutQuart = easeOutQuart;
+exports.easeInOutQuart = easeInOutQuart;
+exports.easeInQuint = easeInQuint;
+exports.easeOutQuint = easeOutQuint;
+exports.easeInOutQuint = easeInOutQuint;
+exports.easeInExpo = easeInExpo;
+exports.easeOutExpo = easeOutExpo;
+exports.easeInOutExpo = easeInOutExpo;
+exports.easeInCirc = easeInCirc;
+exports.easeOutCirc = easeOutCirc;
+exports.easeInOutCirc = easeInOutCirc;
+exports.easeInBack = easeInBack;
+exports.easeOutBack = easeOutBack;
+exports.easeInOutBack = easeInOutBack;
+exports.easeInElastic = easeInElastic;
+exports.easeOutElastic = easeOutElastic;
+exports.easeInOutElastic = easeInOutElastic;
+exports.easeOutBounce = easeOutBounce;
+exports.easeInBounce = easeInBounce;
+exports.easeInOutBounce = easeInOutBounce;
+// Based on https://gist.github.com/gre/1650294
+
+// No easing, no acceleration
+function linear(t) {
+    return t;
+}
+
+// Slight acceleration from zero to full speed
+function easeInSine(t) {
+    return -1 * Math.cos(t * (Math.PI / 2)) + 1;
+}
+
+// Slight deceleration at the end
+function easeOutSine(t) {
+    return Math.sin(t * (Math.PI / 2));
+}
+
+// Slight acceleration at beginning and slight deceleration at end
+function easeInOutSine(t) {
+    return -0.5 * (Math.cos(Math.PI * t) - 1);
+}
+
+// Accelerating from zero velocity
+function easeInQuad(t) {
+    return t * t;
+}
+
+// Decelerating to zero velocity
+function easeOutQuad(t) {
+    return t * (2 - t);
+}
+
+// Acceleration until halfway, then deceleration
+function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+// Accelerating from zero velocity
+function easeInCubic(t) {
+    return t * t * t;
+}
+
+// Decelerating to zero velocity
+function easeOutCubic(t) {
+    var t1 = t - 1;
+    return t1 * t1 * t1 + 1;
+}
+
+// Acceleration until halfway, then deceleration
+function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+}
+
+// Accelerating from zero velocity
+function easeInQuart(t) {
+    return t * t * t * t;
+}
+
+// Decelerating to zero velocity
+function easeOutQuart(t) {
+    var t1 = t - 1;
+    return 1 - t1 * t1 * t1 * t1;
+}
+
+// Acceleration until halfway, then deceleration
+function easeInOutQuart(t) {
+    var t1 = t - 1;
+    return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * t1 * t1 * t1 * t1;
+}
+
+// Accelerating from zero velocity
+function easeInQuint(t) {
+    return t * t * t * t * t;
+}
+
+// Decelerating to zero velocity
+function easeOutQuint(t) {
+    var t1 = t - 1;
+    return 1 + t1 * t1 * t1 * t1 * t1;
+}
+
+// Acceleration until halfway, then deceleration
+function easeInOutQuint(t) {
+    var t1 = t - 1;
+    return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * t1 * t1 * t1 * t1 * t1;
+}
+
+// Accelerate exponentially until finish
+function easeInExpo(t) {
+
+    if (t === 0) {
+        return 0;
+    }
+
+    return Math.pow(2, 10 * (t - 1));
+}
+
+// Initial exponential acceleration slowing to stop
+function easeOutExpo(t) {
+
+    if (t === 1) {
+        return 1;
+    }
+
+    return -Math.pow(2, -10 * t) + 1;
+}
+
+// Exponential acceleration and deceleration
+function easeInOutExpo(t) {
+
+    if (t === 0 || t === 1) {
+        return t;
+    }
+
+    var scaledTime = t * 2;
+    var scaledTime1 = scaledTime - 1;
+
+    if (scaledTime < 1) {
+        return 0.5 * Math.pow(2, 10 * scaledTime1);
+    }
+
+    return 0.5 * (-Math.pow(2, -10 * scaledTime1) + 2);
+}
+
+// Increasing velocity until stop
+function easeInCirc(t) {
+
+    var scaledTime = t / 1;
+    return -1 * (Math.sqrt(1 - scaledTime * t) - 1);
+}
+
+// Start fast, decreasing velocity until stop
+function easeOutCirc(t) {
+
+    var t1 = t - 1;
+    return Math.sqrt(1 - t1 * t1);
+}
+
+// Fast increase in velocity, fast decrease in velocity
+function easeInOutCirc(t) {
+
+    var scaledTime = t * 2;
+    var scaledTime1 = scaledTime - 2;
+
+    if (scaledTime < 1) {
+        return -0.5 * (Math.sqrt(1 - scaledTime * scaledTime) - 1);
+    }
+
+    return 0.5 * (Math.sqrt(1 - scaledTime1 * scaledTime1) + 1);
+}
+
+// Slow movement backwards then fast snap to finish
+function easeInBack(t) {
+    var magnitude = arguments.length <= 1 || arguments[1] === undefined ? 1.70158 : arguments[1];
+
+
+    var scaledTime = t / 1;
+    return scaledTime * scaledTime * ((magnitude + 1) * scaledTime - magnitude);
+}
+
+// Fast snap to backwards point then slow resolve to finish
+function easeOutBack(t) {
+    var magnitude = arguments.length <= 1 || arguments[1] === undefined ? 1.70158 : arguments[1];
+
+
+    var scaledTime = t / 1 - 1;
+
+    return scaledTime * scaledTime * ((magnitude + 1) * scaledTime + magnitude) + 1;
+}
+
+// Slow movement backwards, fast snap to past finish, slow resolve to finish
+function easeInOutBack(t) {
+    var magnitude = arguments.length <= 1 || arguments[1] === undefined ? 1.70158 : arguments[1];
+
+
+    var scaledTime = t * 2;
+    var scaledTime2 = scaledTime - 2;
+
+    var s = magnitude * 1.525;
+
+    if (scaledTime < 1) {
+
+        return 0.5 * scaledTime * scaledTime * ((s + 1) * scaledTime - s);
+    }
+
+    return 0.5 * (scaledTime2 * scaledTime2 * ((s + 1) * scaledTime2 + s) + 2);
+}
+// Bounces slowly then quickly to finish
+function easeInElastic(t) {
+    var magnitude = arguments.length <= 1 || arguments[1] === undefined ? 0.7 : arguments[1];
+
+
+    if (t === 0 || t === 1) {
+        return t;
+    }
+
+    var scaledTime = t / 1;
+    var scaledTime1 = scaledTime - 1;
+
+    var p = 1 - magnitude;
+    var s = p / (2 * Math.PI) * Math.asin(1);
+
+    return -(Math.pow(2, 10 * scaledTime1) * Math.sin((scaledTime1 - s) * (2 * Math.PI) / p));
+}
+
+// Fast acceleration, bounces to zero
+function easeOutElastic(t) {
+    var magnitude = arguments.length <= 1 || arguments[1] === undefined ? 0.7 : arguments[1];
+
+
+    var p = 1 - magnitude;
+    var scaledTime = t * 2;
+
+    if (t === 0 || t === 1) {
+        return t;
+    }
+
+    var s = p / (2 * Math.PI) * Math.asin(1);
+    return Math.pow(2, -10 * scaledTime) * Math.sin((scaledTime - s) * (2 * Math.PI) / p) + 1;
+}
+
+// Slow start and end, two bounces sandwich a fast motion
+function easeInOutElastic(t) {
+    var magnitude = arguments.length <= 1 || arguments[1] === undefined ? 0.65 : arguments[1];
+
+
+    var p = 1 - magnitude;
+
+    if (t === 0 || t === 1) {
+        return t;
+    }
+
+    var scaledTime = t * 2;
+    var scaledTime1 = scaledTime - 1;
+
+    var s = p / (2 * Math.PI) * Math.asin(1);
+
+    if (scaledTime < 1) {
+        return -0.5 * (Math.pow(2, 10 * scaledTime1) * Math.sin((scaledTime1 - s) * (2 * Math.PI) / p));
+    }
+
+    return Math.pow(2, -10 * scaledTime1) * Math.sin((scaledTime1 - s) * (2 * Math.PI) / p) * 0.5 + 1;
+}
+
+// Bounce to completion
+function easeOutBounce(t) {
+
+    var scaledTime = t / 1;
+
+    if (scaledTime < 1 / 2.75) {
+
+        return 7.5625 * scaledTime * scaledTime;
+    } else if (scaledTime < 2 / 2.75) {
+
+        var scaledTime2 = scaledTime - 1.5 / 2.75;
+        return 7.5625 * scaledTime2 * scaledTime2 + 0.75;
+    } else if (scaledTime < 2.5 / 2.75) {
+
+        var _scaledTime = scaledTime - 2.25 / 2.75;
+        return 7.5625 * _scaledTime * _scaledTime + 0.9375;
+    } else {
+
+        var _scaledTime2 = scaledTime - 2.625 / 2.75;
+        return 7.5625 * _scaledTime2 * _scaledTime2 + 0.984375;
+    }
+}
+
+// Bounce increasing in velocity until completion
+function easeInBounce(t) {
+    return 1 - easeOutBounce(1 - t);
+}
+
+// Bounce in and bounce out
+function easeInOutBounce(t) {
+
+    if (t < 0.5) {
+
+        return easeInBounce(t * 2) * 0.5;
+    }
+
+    return easeOutBounce(t * 2 - 1) * 0.5 + 0.5;
+}
+
+},{}],2:[function(require,module,exports){
 'use strict';
 
 var factory = function OneDHeightmap(settings) {
     return Object.create(factory.methods).init(settings);
 };
 
-factory.defaults = {
-    data:      null,
-    length:    100,
-    minHeight: 1,
-    maxHeight: 20,
-};
-
 factory.methods = Object.assign(
     {
         factory: factory
-    },
-    require('./methods/compositions'),
-    require('./methods/getters'),
+},
+    require('./methods/mergers'),
     require('./methods/init'),
     require('./methods/iterators'),
-    require('./methods/rng'),
     require('./methods/transformations')
 );
 
 module.exports = factory;
-},{"./methods/compositions":4,"./methods/getters":5,"./methods/init":6,"./methods/iterators":7,"./methods/rng":8,"./methods/transformations":9}],2:[function(require,module,exports){
+},{"./methods/init":6,"./methods/iterators":7,"./methods/mergers":8,"./methods/transformations":9}],3:[function(require,module,exports){
 'use strict';
 
-var arg           = require('./util').arg;
+var arg                  = require('./util').arg;
 var oneDHeightmapFactory = require('./1d-heightmap');
+var rng                  = require('./rng');
+var random               = rng.float;
+var randomRange          = rng.range;
+var randomSpacedIndexes  = rng.spacedIndexes;
+
+var interpolate = require('./interpolators');
 
 var generators = {
+
     /**
      * Create 1dHeightmap object with random data.
      * @method random
      * @param {Object} [settings] - Settings object.
      * @param {Number} [settings.length] - Length of height map.
      * @param {Array}  [settings.data] - Length of height map. If set, settings.length is ignored.
-     * @param {Number} [settings.minHeight] - Min Height of height map.
-     * @param {Number} [settings.maxHeight] - Max Height of height map.
+     * @param {Number} [settings.min] - Min Height of height map.
+     * @param {Number} [settings.max] - Max Height of height map.
      * @param {Number} [settings.startHeight] - Height of first value.
      * @param {Number} [settings.endHeight] - Height of last value.
      * @return {Object} Initialized 1dHeightmap object.
@@ -51,12 +369,14 @@ var generators = {
         var defaults = {
             startHeight: undefined,
             endHeight:   undefined,
+            min:         0,
+            max:         100,
         };
 
         var s = Object.assign({}, defaults, settings);
 
         hm.mapEach(function(val, i) {
-            return hm.rngRange(hm.minHeight, hm.maxHeight);
+            return randomRange(s.min, s.max);
         });
 
         if (s.startHeight) {
@@ -74,86 +394,108 @@ var generators = {
     * @param {Object} [settings] - Settings object.
     * @param {Number} [settings.length] - Length of height map.
     * @param {Array}  [settings.data] - Length of height map. If set, settings.length is ignored.
-    * @param {Number} [settings.minHeight] - Min Height of height map.
-    * @param {Number} [settings.maxHeight] - Max Height of height map.
+    * @param {Number} [settings.min] - Min Height of height map.
+    * @param {Number} [settings.max] - Max Height of height map.
     * @param {Number} [settings.startHeight] - Height of first value.
     * @param {Number} [settings.endHeight] - Height of last value.
     * @param {Number} [settings.minSpacing] - Min distance between key positions initially created.
     * @param {Number} [settings.maxSpacing] - Max distance between key positions initially created.
-    * @param {Function} [settings.interpolateFunc] - Function to interpolate key position data.
+    * @param {Function} [settings.interpolator] - Function to interpolate key position data.
     * @return {Object} Initialized 1dHeightmap object.
     */
     perlin: function(settings) {
 
-        var hm = oneDHeightmapFactory(settings);
-
+        var hm       = oneDHeightmapFactory(settings);
         var defaults = {
-            startHeight: null,
-            endHeight:   null,
-
-            minSpacing:      undefined,
-            maxSpacing:      undefined,
-            interpolateFunc: null,
+            interpolator: interpolate.sin,
         };
 
         var s = Object.assign({}, defaults, settings);
 
-        var startHeight     = s.startHeight;
-        var endHeight       = s.endHeight;
-        var minSpacing      = arg(s.minSpacing, hm.data.length * 0.1);
-        var maxSpacing      = arg(s.maxSpacing, hm.data.length * 0.1);
-        var interpolateFunc = s.interpolateFunc;
+        var interpolator = s.interpolator;
 
-        var minHeight = hm.minHeight;
-        var maxHeight = hm.maxHeight;
+        var keyIndexes = this.keyIndexes(settings);
+        var results    = this.interpolateKeyIndexes(keyIndexes, interpolator);
 
-        var keyIndexes = hm.getRandomSpacedPositions(minSpacing, maxSpacing, true, true);
-        var keyIndexesWithValues = keyIndexes.map(function(index) {
+        hm.data = results;
+
+        return hm;
+    },
+    keyIndexes: function(settings) {
+        var defaults = {
+            length:      null,
+            startHeight: undefined,
+            endHeight:   undefined,
+
+            minSpacing:   undefined,
+            maxSpacing:   undefined,
+            interpolator: null,
+            min:          0,
+            max:          100,
+        };
+
+        var s = Object.assign({}, defaults, settings);
+
+        var length      = s.length;
+        var startHeight = s.startHeight;
+        var endHeight   = s.endHeight;
+        var minSpacing  = arg(s.minSpacing, length * 0.1);
+        var maxSpacing  = arg(s.maxSpacing, length * 0.1);
+        var minHeight   = s.min;
+        var maxHeight   = s.max;
+
+        var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing);
+
+        var out = keyIndexes.map(function(index, i) {
+
+            var value = randomRange(minHeight, maxHeight);
+            if (i === 0) {
+                value = arg(startHeight, value);
+            }
             return {
                 index: index,
-                value: hm.rngRange(minHeight, maxHeight)
+                value: value,
             };
         });
 
-        if (startHeight) {
-            keyIndexesWithValues[0] = {
-                index: 0,
-                value: startHeight,
-            };
+        var last = out[out.length - 1];
+
+
+        if (last.index < length - 1) {
+            var endValue = arg(endHeight, randomRange(minHeight, maxHeight));
+            out.push({
+                index: length - 1,
+                value: endValue
+            });
         }
-        if (endHeight) {
-            keyIndexesWithValues[keyIndexesWithValues.length - 1] = {
-                index: hm.data.length - 1,
-                value: endHeight
-            };
-        }
+        return out;
+    },
+    interpolateKeyIndexes: function(keyIndexes, interpolator) {
         var results = [];
-        keyIndexesWithValues.forEach(function(item, i) {
+        keyIndexes.forEach(function(item, i) {
 
             results.push(item.value);
 
-            if (i === keyIndexesWithValues.length - 1) {
+            var nextItem = keyIndexes[i + 1];
+
+            if (!nextItem) {
                 return;
             }
-
-            var nextItem        = keyIndexesWithValues[i + 1];
             var curerntKeyIndex = item.index;
             var nextKeyIndex    = nextItem.index;
-            var wavelength      = nextKeyIndex - curerntKeyIndex - 1;
+            var wavelength      = Math.abs(nextKeyIndex - curerntKeyIndex - 1);
             var a               = item.value;
             var b               = nextItem.value;
 
             for (var j = 0; j < wavelength; j++) {
                 var x               = j / wavelength;
-                var interpolatedVal = interpolateFunc(a, b, x);
+                var interpolatedVal = interpolator(a, b, x);
                 results.push(interpolatedVal);
             }
         });
 
-        hm.data = results;
-        return hm;
+        return results;
     },
-
     rough: function(settings) {
         var hm = oneDHeightmapFactory(settings);
 
@@ -171,29 +513,31 @@ var generators = {
 
             // distance at which the height starts tapering to the startHeight
             startTaperMargin: undefined,
-
-            debug: false,
+            min:              0,
+            max:              100,
+            debug:            false,
         };
 
         var s = Object.assign({}, defaults, settings);
+        var min               = s.min;
+        var max               = s.max;
 
-        var debug            = s.debug,
-            startHeight      = arg(s.startHeight, hm.minHeight),
-            startTaperMargin = arg(s.startTaperMargin, hm.maxHeight * 0.25),
-            startTaperHeight,
-            startMinTaperHeight,
+        var debug            = s.debug;
+        var startHeight      = arg(s.startHeight, min);
+        var startTaperMargin = arg(s.startTaperMargin, max * 0.25);
+        var startTaperHeight;
+        var startMinTaperHeight;
 
-            endHeight      = arg(s.endHeight, hm.minHeight),
-            endTaperMargin = arg(s.endTaperMargin, hm.maxHeight * 0.25),
-            endTaperHeight,
-            endMinTaperHeight,
+        var endHeight      = arg(s.endHeight, min);
+        var endTaperMargin = arg(s.endTaperMargin, max * 0.25);
+        var endTaperHeight;
+        var endMinTaperHeight;
+        console.log('endTaperMargin', endTaperMargin);
 
-            min               = hm.minHeight,
-            max               = hm.maxHeight,
-            length            = hm.data.length,
-            prevHeight        = startHeight,
-            edgeDeflectMargin = s.edgeDeflectMargin,
-            variance          = s.variance;
+        var length            = hm.data.length;
+        var prevHeight        = startHeight;
+        var edgeDeflectMargin = s.edgeDeflectMargin;
+        var variance          = s.variance;
 
         if (debug) {
             hm.debugData                 = hm.debugData || {};
@@ -206,19 +550,19 @@ var generators = {
 
         hm.data[0] = startHeight;
 
-        var startSlope    = ((max - startHeight) / startTaperMargin),
-            startMinSlope = (startHeight / startTaperMargin) * -1,
-            endSlope      = ((max - endHeight) / endTaperMargin),
-            endMinSlope   = (endHeight / endTaperMargin) * -1;
+        var startSlope    = ((max - startHeight) / startTaperMargin);
+        var startMinSlope = (startHeight / startTaperMargin) * -1;
+        var endSlope      = ((max - endHeight) / endTaperMargin);
+        var endMinSlope   = (endHeight / endTaperMargin) * -1;
 
         for (var i = 1; i < length; i++) {
-            var distanceFromEdge = false,
-                startTaperRatio  = false,
-                endTaperRatio    = false,
-                minDeflectRatio  = false,
-                maxDeflectRatio  = false,
-                absoluteMin      = min,
-                absoluteMax      = max;
+            var distanceFromEdge = false;
+            var startTaperRatio  = false;
+            var endTaperRatio    = false;
+            var minDeflectRatio  = false;
+            var maxDeflectRatio  = false;
+            var absoluteMin      = min;
+            var absoluteMax      = max;
 
             if (i < startTaperMargin) {
                 distanceFromEdge = i;
@@ -245,12 +589,9 @@ var generators = {
                 highVariance += absoluteMin - lowVariance;
             }
 
-
-            var adjustedMin = Math.max(lowVariance, absoluteMin),
-                adjustedMax = Math.min(highVariance, absoluteMax);
-
-            var height = prevHeight;
-
+            var adjustedMin = Math.max(lowVariance, absoluteMin);
+            var adjustedMax = Math.min(highVariance, absoluteMax);
+            var height      = prevHeight;
             var heightRatio = (height - absoluteMin) / (absoluteMax - absoluteMin);
 
             // pull away from edges
@@ -264,32 +605,33 @@ var generators = {
             if (
                 startTaperRatio !== false &&
                 height > absoluteMax &&
-                hm.rng() < startTaperRatio - 0.5
+                random() < startTaperRatio - 0.5
             ) {
                 height = absoluteMax;
             } else if (
                 endTaperRatio !== false &&
                 height > absoluteMax &&
-                hm.rng() < endTaperRatio - 0.5
+                random() < endTaperRatio - 0.5
             ) {
                 height = absoluteMax;
+                console.log(absoluteMax);
             }
 
             // pull away from absoluteMin, percentOfMargin = (heightRatio * (1 /edgeMargin))
             else if (
                 minDeflectRatio !== false &&
-                hm.rng() < minDeflectRatio
+                random() < minDeflectRatio
             ) {
                 height += variance;
             } else if (
                 maxDeflectRatio !== false &&
-                hm.rng() < maxDeflectRatio
+                random() < maxDeflectRatio
             ) {
                 height -= variance;
             }
             // random deviation
-            else if (hm.rng() < s.deviationChance) {
-                height = hm.rng() * (adjustedMax - adjustedMin) + adjustedMin;
+            else if (random() < s.deviationChance) {
+                height = randomRange(adjustedMin, adjustedMax);
             }
 
             hm.data[i] = height;
@@ -314,124 +656,89 @@ var generators = {
 };
 
 module.exports = generators;
-},{"./1d-heightmap":1,"./util":11}],3:[function(require,module,exports){
+},{"./1d-heightmap":2,"./interpolators":5,"./rng":11,"./util":12}],4:[function(require,module,exports){
 'use strict';
 
 var api = {
-    create: require('./1d-heightmap'),
-    generate: require('./generators'),
-    draw: require('./renderer'),
+    create:      require('./1d-heightmap'),
+    generate:    require('./generators'),
+    draw:        require('./renderer'),
+    rng:         require('./rng'),
+    interpolate: require('./interpolators')
 };
 
 module.exports = api;
-},{"./1d-heightmap":1,"./generators":2,"./renderer":10}],4:[function(require,module,exports){
+},{"./1d-heightmap":2,"./generators":3,"./interpolators":5,"./renderer":10,"./rng":11}],5:[function(require,module,exports){
 'use strict';
-var methods = {
 
-    /**
-     * merge 2 height maps taking the lowest value per coord
-     * @method mergeMin
-     * @param {1dHeightMap} heightmap
-     * @return {1dHeightMap}
-     */
-    mergeMin: function(heightmap) {
-        return this.merge(heightmap, function(a, b) {
-            return Math.min(a, b);
-        });
-    },
+var easing = require('easing-utils');
 
-    /**
-     * merge 2 height maps taking the highest value per coord
-     * @method mergeMax
-     * @param {1dHeightMap} heightmap
-     * @return {1dHeightMap}
-     */
-    mergeMax: function(heightmap) {
-        return this.merge(heightmap, function(a, b) {
-            return Math.max(a, b);
-        });
-    },
-    mergeAdd: function(heightmap) {
-        return this.merge(heightmap, function(a, b) {
-            return a + b;
-        });
-    },
-    mergeSubtract: function(heightmap) {
-        return this.merge(heightmap, function(a, b) {
-            return a - b;
-        });
-    },
-    mergeMultiply: function(heightmap) {
-        return this.merge(heightmap, function(a, b) {
-            return a * b;
-        });
-    },
-    mergeDivide: function(heightmap) {
-        return this.merge(heightmap, function(a, b) {
-            return a / b;
-        });
-    },
-
-    mergeToScale: function(heightmap) {
-        return this.merge(heightmap, function(a, b) {
-            var heightRatio = a / this.maxHeight;
-            return heightRatio * b;
-        });
-    },
+var block = function(k) {
+    return Math.round(k);
 };
-module.exports = methods;
-},{}],5:[function(require,module,exports){
-'use strict';
-var arg = require('../util').arg;
 
-var methods = {
-
-    /** getters */
-    getMin: function() {
-        return Math.min.apply(null, this.data);
-    },
-    getMax: function() {
-        return Math.max.apply(null, this.data);
-    },
-    getRange: function() {
-        return this.getMax() - this.getMin();
-    },
-    getMaxRange: function() {
-        return this.maxHeight - this.minHeight;
-    },
-    getRandomSpacedPositions: function(minSpacing, maxSpacing, includeFirst, includeLast) {
-        minSpacing   = arg(minSpacing, this.data.length * 0.1);
-        maxSpacing   = arg(maxSpacing, this.data.length * 0.3);
-        includeFirst = arg(includeFirst, false);
-        includeLast  = arg(includeLast, false);
-
-        minSpacing = Math.max(1, minSpacing);
-        maxSpacing = Math.max(1, maxSpacing);
-
-        var positions = [];
-
-        if (includeFirst) {
-            positions.push(0);
-        }
-        var next = this.rngRange(minSpacing, maxSpacing);
-
-        for (var i = 0; i < this.data.length; i++) {
-            if (i == next) {
-                positions.push(i);
-                next = i + this.rngRange(minSpacing, maxSpacing);
-            }
-        }
-        if (includeLast) {
-            positions.push(this.data.length - 1);
-        }
-        return positions;
-    },
+var smoothStep = function(x) {
+    return x * x * (3 - 2 * x);
 };
-module.exports = methods;
 
+var makeReversable = function(func1, func2) {
+    return function(a, b, x) {
+        if (a < b) {
+            return a + ((b - a) * func1(x));
+        } else {
+            return a + ((b - a) * func2(x));
+        }
+    };
+};
 
-},{"../util":11}],6:[function(require,module,exports){
+var make = function(func) {
+    return function(a, b, x) {
+        return a + ((b - a) * func(x));
+    };
+};
+
+var e = easing;
+
+module.exports = {
+
+    linear: make(e.linear),
+
+    block:      make(block),
+    smoothStep: make(smoothStep),
+
+    sine:     make(e.easeInOutSine),
+    sineDown: makeReversable(e.easeInSine, e.easeOutSine),
+    sineUp:   makeReversable(e.easeOutSine, e.easeInSine),
+
+    quad:     make(e.easeInOutQuad),
+    quadUp:   makeReversable(e.easeOutQuad, e.easeInQuad),
+    quadDown: makeReversable(e.easeInQuad, e.easeOutQuad),
+
+    cubic:     make(e.easeInOutCubic),
+    cubicUp:   makeReversable(e.easeOutCubic, e.easeInCubic),
+    cubicDown: makeReversable(e.easeInCubic, e.easeOutCubic),
+
+    quart:     make(e.easeInOutQuart),
+    quartUp:   makeReversable(e.easeOutQuart, e.easeInQuart),
+    quartDown: makeReversable(e.easeInQuart, e.easeOutQuart),
+
+    quint:     make(e.easeInOutQuint),
+    quintUp:   makeReversable(e.easeOutQuint, e.easeInQuint),
+    quintDown: makeReversable(e.easeInQuint, e.easeOutQuint),
+
+    expo:     make(e.easeInOutExpo),
+    expoUp:   makeReversable(e.easeOutExpo, e.easeInExpo),
+    expoDown: makeReversable(e.easeInExpo, e.easeOutExpo),
+
+    circ:     make(e.easeInOutCirc),
+    circUp:   makeReversable(e.easeOutCirc, e.easeInCirc),
+    circDown: makeReversable(e.easeInCirc, e.easeOutCirc),
+
+};
+},{"easing-utils":1}],6:[function(require,module,exports){
 'use strict';
+
+var makeArray = require('../util').makeArray;
 
 var methods = {
     /**
@@ -440,43 +747,35 @@ var methods = {
      * @param {Object} [settings] - Settings object.
      * @param {Number} [settings.length] - Length of height map.
      * @param {Array}  [settings.data] - Length of height map. If set, settings.length is ignored.
-     * @param {Number} [settings.minHeight] - Min Height of height map.
-     * @param {Number} [settings.maxHeight] - Max Height of height map.
      * @return {Object} Initialized 1dHeightmap object.
      */
     init: function(settings) {
+        var s = settings || {};
 
-        var s = Object.assign({}, this.factory.defaults, settings);
-
-        this.data = s.data;
-
-        if (!this.data) {
-            this.data = [];
-            for (var i = 0; i < s.length; i++) {
-                this.data[i] = 0;
-            }
-        }
-
-        this.minHeight = s.minHeight;
-        this.maxHeight = s.maxHeight;
+        this.data = s.data || makeArray(s.length);
 
         return this;
     },
-    copy: function(settings) {
-        var srcSettings = {
-            data:      [].concat(this.data),
-            minHeight: this.minHeight,
-            maxHeight: this.maxHeight,
+    copy: function() {
+        var settings = {
+            data: [].concat(this.data)
         };
-
-        settings = Object.assign(srcSettings, settings);
-
         return this.factory(settings);
     },
+    min: function() {
+        return Math.min.apply(null, this.data);
+    },
+    max: function() {
+        return Math.max.apply(null, this.data);
+    },
+    range: function() {
+        return this.max() - this.min();
+    }
 };
+
 module.exports = methods;
 
-},{}],7:[function(require,module,exports){
+},{"../util":12}],7:[function(require,module,exports){
 'use strict';
 
 var arg = require('../util').arg;
@@ -499,8 +798,21 @@ var methods = {
         this.data = this.data.map(func, context);
         return this;
     },
-    merge: function(heightmap, func, maxLength) {
-        maxLength = arg(maxLength, Math.max(this.data.length, heightmap.data.length));
+
+
+};
+module.exports = methods;
+
+},{"../util":12}],8:[function(require,module,exports){
+'use strict';
+
+var arg = require('../util').arg;
+
+var methods = {
+
+    merge: function(heightmap, func, maxLength, defaultValue) {
+        maxLength    = arg(maxLength, Math.max(this.data.length, heightmap.data.length));
+        defaultValue = arg(defaultValue, 0);
 
         var target = this,
             source = heightmap,
@@ -509,30 +821,102 @@ var methods = {
             var targetVal = target.data[i];
             var srcVal    = source.data[i];
 
+            if (targetVal === undefined || targetVal === null) {
+                targetVal = defaultValue;
+            }
+
+            if (srcVal === undefined || srcVal === null) {
+                srcVal = defaultValue;
+            }
+
             target.data[i] = func(targetVal, srcVal, i, target.data, source.data);
         }
         return this;
     },
 
+    /**
+     * merge 2 height maps taking the lowest value per coord
+     * @method mergeMin
+     * @param {1dHeightMap} heightmap
+     * @return {1dHeightMap}
+     */
+    mergeMin: function(heightmap, maxLength, defaultValue) {
+        return this.merge(heightmap, function(a, b) {
+            return Math.min(a, b);
+        }, maxLength, defaultValue);
+    },
+
+    /**
+     * merge 2 height maps taking the highest value per coord
+     * @method mergeMax
+     * @param {1dHeightMap} heightmap
+     * @return {1dHeightMap}
+     */
+    mergeMax: function(heightmap, maxLength, defaultValue) {
+        return this.merge(heightmap, function(a, b) {
+            return Math.max(a, b);
+        }, maxLength, defaultValue);
+    },
+    mergeAdd: function(heightmap, maxLength, defaultValue) {
+        return this.merge(heightmap, function(a, b) {
+            return a + b;
+        }, maxLength, defaultValue);
+    },
+    mergeSubtract: function(heightmap, maxLength, defaultValue) {
+        return this.merge(heightmap, function(a, b) {
+            return a - b;
+        }, maxLength, defaultValue);
+    },
+    mergeMultiply: function(heightmap, maxLength, defaultValue) {
+        return this.merge(heightmap, function(a, b) {
+            return a * b;
+        }, maxLength, defaultValue);
+    },
+    mergeDivide: function(heightmap, maxLength, defaultValue) {
+        return this.merge(heightmap, function(a, b) {
+            return a / b;
+        }, maxLength, defaultValue);
+    },
+    mergeAverage: function(heightmap, maxLength, defaultValue) {
+        return this.merge(heightmap, function(a, b) {
+            return (a + b) / 2;
+        }, maxLength, defaultValue);
+    },
+    mergeToScale: function(heightmap, maxLength, defaultValue) {
+        var max = this.max();
+        return this.merge(heightmap, function(a, b) {
+            var heightRatio = a / max;
+            return heightRatio * b;
+        }, maxLength, defaultValue);
+    },
 };
 module.exports = methods;
-
-},{"../util":11}],8:[function(require,module,exports){
-'use strict';
-
-var methods = {
-    rng:      Math.random,
-    rngRange: function(min, max) {
-        return Math.floor(this.rng() * (max - min + 1)) + min;
-    }
-};
-module.exports = methods;
-
-},{}],9:[function(require,module,exports){
+},{"../util":12}],9:[function(require,module,exports){
 'use strict';
 var arg = require('../util').arg;
 
+var rng                 = require('../rng');
+var random              = rng.float;
+var randomRange         = rng.range;
+var randomSpacedIndexes = rng.spacedIndexes;
+
 var methods = {
+    clamp: function(minValue, maxValue) {
+        return this.mapEach(function(val) {
+            val = Math.min(val, maxValue);
+            return Math.max(val, minValue);
+        })
+    },
+    clampMax: function(maxValue) {
+        return this.mapEach(function(val) {
+            return Math.min(val, maxValue);
+        })
+    },
+    clampMin: function(minValue) {
+        return this.mapEach(function(val) {
+            return Math.max(val, minValue);
+        })
+    },
     add: function(val) {
         return this.mapEach(function(v) {
             return v + val;
@@ -558,15 +942,15 @@ var methods = {
     },
     invert: function() {
         return this.mapEach(function(val) {
-            return this.maxHeight - val;
+            return this.max() - val;
         });
     },
     reverse: function() {
         this.data.reverse();
         return this;
     },
-    scaleToNewMaxHeight: function(maxHeight) {
-        var ratio = maxHeight / this.getMax();
+    scaleToHeight: function(maxHeight) {
+        var ratio = maxHeight / this.max();
         return this.multiply(ratio);
     },
     scaleLengthTo: function(newLenght, interpolateFunc) {
@@ -589,7 +973,6 @@ var methods = {
 
             prevIndex = newIndex;
         });
-
         var results = [];
         keyPoints.forEach(function(item, index) {
 
@@ -602,7 +985,7 @@ var methods = {
             var nextItem     = keyPoints[index + 1];
             var currentIndex = item.index;
             var nextIndex    = nextItem.index;
-            var chunk        = nextIndex - currentIndex;
+            var chunk        = nextIndex - currentIndex - 1;
             var a            = item.value;
             var b            = nextItem.value;
 
@@ -635,29 +1018,33 @@ var methods = {
         return this;
     },
     /** RNG transforms */
-    weightedRatioAdjustment: function(height, ratioWeight, func) {
-        height      = arg(height, this.maxHeight * 0.1);
+    weightedRatioAdjustment: function(height, variance, ratioWeight, func) {
+        height      = arg(height, this.max() * 0.1);
         ratioWeight = arg(ratioWeight, 1);
+        variance = arg(variance, 0.33);
 
         return this.mapEach(function(height, i, data) {
-            var ratio      = (height / this.maxHeight) * ratioWeight;
-            var percent    = (this.rng() + ratio) / (1 + ratioWeight);
+            var ratio      = (height / this.max()) * ratioWeight;
+            var randomVariance = random() * variance;
+            var percent    = (randomVariance + ratio) / (1 + ratioWeight);
             var adjustment = (percent * height);
             return func(height, adjustment);
         });
     },
-    shrink: function(shrinkHeight, shrinkHeightRatioWeight) {
+    shrink: function(shrinkHeight, variance, shrinkHeightRatioWeight) {
         return this.weightedRatioAdjustment(
             shrinkHeight,
+            variance,
             shrinkHeightRatioWeight,
             function(val, adjustment) {
                 return val - adjustment;
             }
         );
     },
-    grow: function(growHeight, growHeightRatioWeight) {
+    grow: function(growHeight, variance, growHeightRatioWeight) {
         return this.weightedRatioAdjustment(
             growHeight,
+            variance,
             growHeightRatioWeight,
             function(val, adjustment) {
                 return val + adjustment;
@@ -665,14 +1052,14 @@ var methods = {
         );
     },
     drip: function(minLength, maxLength, chance) {
-        minLength = arg(minLength, this.maxHeight * 0.25);
-        maxLength = arg(maxLength, this.maxHeight * 0.75);
+        minLength = arg(minLength, this.max() * 0.25);
+        maxLength = arg(maxLength, this.max() * 0.75);
         chance    = arg(chance, 0.45);
 
         return this.mapEach(function(val) {
-            if (this.rng() < chance) {
-                var newVal = val + this.rng() * (maxLength - minLength) + minLength;
-                return Math.min(this.maxHeight, newVal);
+            if (random() < chance) {
+                var newVal = val + random() * (maxLength - minLength) + minLength;
+                return newVal;
             }
             return val;
         });
@@ -684,30 +1071,29 @@ var methods = {
         percentVarianceHeightRatioWeight = arg(percentVarianceHeightRatioWeight, 1);
 
         return this.mapEach(function(val) {
-            var heightRatio    = val / this.maxHeight;
+            var heightRatio    = val / this.max();
             var frequencyTotal = 1 + frequencyHeightRatioWeight;
             var finalChance    = (frequency + heightRatio * frequencyHeightRatioWeight) / frequencyTotal;
 
-            if (this.rng() < finalChance) {
+            if (random() < finalChance) {
                 var varianceTotal = 1 + percentVarianceHeightRatioWeight,
                     finalVariance = (percentVariance + heightRatio * percentVarianceHeightRatioWeight) / varianceTotal;
 
-                var newVal = val + this.rng() * (this.maxHeight * finalVariance);
-                return Math.min(this.maxHeight, newVal);
+                var newVal = val + random() * (this.max() * finalVariance);
+                return newVal;
             }
             return val;
         });
     },
     distort: function(variance) {
-        variance = arg(variance, 0.2 * this.maxHeight);
+        variance = arg(variance, 0.2 * this.max());
 
         return this.mapEach(function(val) {
-            return val + (this.rng() * variance) - variance * 0.5;
+            return val + (random() * variance) - variance * 0.5;
         });
     },
-
     adjustRandomSpacedPositions: function(minSpacing, maxSpacing, func) {
-        var indexes = this.getRandomSpacedPositions(minSpacing, maxSpacing);
+        var indexes = randomSpacedIndexes(this.data.length, minSpacing, maxSpacing);
         indexes.forEach(function(i) {
             this.data[i] = func(this.data[i], i, this.data);
         }, this);
@@ -720,13 +1106,27 @@ var methods = {
                 return val;
             }
         });
+    },
+    turbulence: function(){
+        // if (
+        //         minDeflectRatio !== false &&
+        //         random() < minDeflectRatio
+        //     ) {
+        //         height += variance;
+        //     } else if (
+        //         maxDeflectRatio !== false &&
+        //         random() < maxDeflectRatio
+        //     ) {
+        //         height -= variance;
+        //     }
+        //       var lowVariance  = prevHeight - variance,
+        //         highVariance = prevHeight + variance;
     }
 
 };
 module.exports = methods;
-},{"../util":11}],10:[function(require,module,exports){
+},{"../rng":11,"../util":12}],10:[function(require,module,exports){
 'use strict';
-
 
 function draw(settings) {
     var defaults = {
@@ -768,11 +1168,11 @@ function draw(settings) {
         ctx.fillStyle = color;
         if (direction === 'up') {
             x = rx + i * columnWidth;
-            y = ry + heightmap.maxHeight - height;
+            y = ry - height;
             w = columnWidth;
             h = height;
         } else if (direction === 'left') {
-            x = rx + heightmap.maxHeight - height;
+            x = rx - height;
             y = ry + i * columnWidth;
             w = height;
             h = columnWidth;
@@ -841,10 +1241,9 @@ function debugDraw(heightmap, ctx, x, y, direction, scale, val, color) {
         dy = y;
 
     if (direction === 'up') {
-        dy = y + heightmap.maxHeight - val;
-
+        dy = y - val;
     } else if (direction === 'left') {
-        dx = x + heightmap.maxHeight - val;
+        dx = x + heightmap.max() - val;
 
     } else if (direction === 'right') {
         dx = x + val;
@@ -867,13 +1266,76 @@ module.exports = draw;
 },{}],11:[function(require,module,exports){
 'use strict';
 
+var arg = require('./util').arg;
+
+var rng = Math.random;
+
+var float = function() {
+    return rng();
+};
+
+var range = function(min, max) {
+    return Math.floor(rng() * (max - min + 1)) + min;
+};
+
+var spacedIndexes = function(length, minSpacing, maxSpacing, includeFirstAndLast) {
+    minSpacing = arg(minSpacing, length * 0.1);
+    maxSpacing = arg(maxSpacing, length * 0.3);
+    includeFirstAndLast = arg(includeFirstAndLast, true);
+
+    minSpacing = Math.max(1, minSpacing);
+    maxSpacing = Math.max(1, maxSpacing);
+
+    var indexes = [];
+
+    var next = range(minSpacing, maxSpacing);
+
+    for (var i = 0; i < length; i++) {
+        if (i == next) {
+            indexes.push(i);
+            next = i + range(minSpacing, maxSpacing);
+        }
+    }
+
+    if(includeFirstAndLast){
+        indexes = [0].concat(indexes, [length-1]);
+    }
+
+    return indexes;
+};
+
+var methods = {
+    set: function(newRng) {
+        rng = newRng;
+    },
+    float:         float,
+    range:         range,
+    spacedIndexes: spacedIndexes,
+};
+
+module.exports = methods;
+
+},{"./util":12}],12:[function(require,module,exports){
+'use strict';
+
 var arg = function(val, defaultVal) {
     return val !== undefined ? val : defaultVal;
 };
 
 module.exports = {
     arg: arg,
+
+    makeArray: function(length, value) {
+        value = arg(value, 0);
+        var a = [];
+
+        for (var i = 0; i < length; i++) {
+            a[i] = value;
+        }
+        return a;
+    },
+
 };
-},{}]},{},[3])(3)
+},{}]},{},[4])(4)
 });
 //# sourceMappingURL=1d-heightmap.js.map

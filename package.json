@@ -21,5 +21,8 @@
     "browserify": "^13.0.1",
     "exorcist": "^0.4.0",
     "watchify": "^3.7.0"
+  },
+  "dependencies": {
+    "easing-utils": "0.0.4"
   }
 }

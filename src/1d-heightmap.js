@@ -4,22 +4,13 @@ var factory = function OneDHeightmap(settings) {
     return Object.create(factory.methods).init(settings);
 };
 
-factory.defaults = {
-    data:      null,
-    length:    100,
-    minHeight: 1,
-    maxHeight: 20,
-};
-
 factory.methods = Object.assign(
     {
         factory: factory
-    },
-    require('./methods/compositions'),
-    require('./methods/getters'),
+},
+    require('./methods/mergers'),
     require('./methods/init'),
     require('./methods/iterators'),
-    require('./methods/rng'),
     require('./methods/transformations')
 );
 
