@@ -143,11 +143,11 @@
     display({
         heightmap: hm,
         transform: function(hm) {
-            hm.adjustRandomSpacedPositions(2, 10, function(val) {
+            hm.adjustRandomSpacedPositions(2, 10, true, function(val) {
                 return val + 10;
             });
         },
-        label: 'adjustRandomSpacedPositions()'
+        label: 'adjustRandomSpacedPositions(...)'
     });
 
     display({

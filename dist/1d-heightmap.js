@@ -932,8 +932,9 @@ var methods = {
 module.exports = methods;
 },{"../util":12}],9:[function(require,module,exports){
 'use strict';
-var arg       = require('../util').arg;
-var makeArray = require('../util').makeArray;
+var arg                = require('../util').arg;
+var makeArray          = require('../util').makeArray;
+var sliceRelativeRange = require('../util').sliceRelativeRange;
 
 var rng                 = require('../rng');
 var random              = rng.float;
@@ -941,6 +942,31 @@ var randomRange         = rng.range;
 var randomSpacedIndexes = rng.spacedIndexes;
 
 var methods = {
+    /* adjustments */
+    adjustRandomSpacedPositions: function(minSpacing, maxSpacing, includeFirstAndLast, func) {
+        var indexes = randomSpacedIndexes(this.data.length, minSpacing, maxSpacing, includeFirstAndLast);
+        indexes.forEach(function(i) {
+            this.data[i] = func(this.data[i], i, this.data);
+        }, this);
+        return this;
+    },
+    adjustEvery: function(interval, func) {
+        return this.mapEach(function(val, i, arr) {
+            if (i % interval === 0) {
+                return func(val, i, arr);
+            } else {
+                return val;
+            }
+        });
+    },
+    adjustBetween: function(startIndex, endIndex, func) {
+        var data = this.data;
+        for (var i = startIndex; i <= endIndex; i++) {
+            data[i] = func(data[i], i, data);
+        }
+        return this;
+    },
+
     clamp: function(minValue, maxValue) {
         return this.mapEach(function(val) {
             val = Math.min(val, maxValue);
@@ -1057,6 +1083,7 @@ var methods = {
         }
         return this;
     },
+
     /** RNG transforms */
     weightedRatioAdjustment: function(height, variance, ratioWeight, func) {
         height      = arg(height, this.max() * 0.1);
@@ -1067,7 +1094,7 @@ var methods = {
             var ratio          = (height / this.max()) * ratioWeight;
             var randomVariance = random() * variance;
             var percent        = (randomVariance + ratio) / (1 + ratioWeight);
-            var adjustment     = (percent * height);
+            var adjustment     = percent * height;
             return func(height, adjustment);
         });
     },
@@ -1098,7 +1125,7 @@ var methods = {
 
         return this.mapEach(function(val) {
             if (random() < chance) {
-                var newVal = val + random() * (maxLength - minLength) + minLength;
+                var newVal = val + randomRange(minLength, maxLength);
                 return newVal;
             }
             return val;
@@ -1111,9 +1138,8 @@ var methods = {
         percentVarianceHeightRatioWeight = arg(percentVarianceHeightRatioWeight, 1);
 
         return this.mapEach(function(val) {
-            var heightRatio    = val / this.max();
-            var frequencyTotal = 1 + frequencyHeightRatioWeight;
-            var finalChance    = (frequency + heightRatio * frequencyHeightRatioWeight) / frequencyTotal;
+            var heightRatio = val / this.max();
+            var finalChance = (frequency + heightRatio * frequencyHeightRatioWeight) / 1 + frequencyHeightRatioWeight;
 
             if (random() < finalChance) {
                 var varianceTotal = 1 + percentVarianceHeightRatioWeight,
@@ -1129,44 +1155,26 @@ var methods = {
         variance = arg(variance, 0.2 * this.max());
 
         return this.mapEach(function(val) {
-            return val + (random() * variance) - variance * 0.5;
+            return val + (randomRange(-variance * 0.5, variance * 0.5));
         });
     },
-    adjustRandomSpacedPositions: function(minSpacing, maxSpacing, func) {
-        var indexes = randomSpacedIndexes(this.data.length, minSpacing, maxSpacing);
-        indexes.forEach(function(i) {
-            this.data[i] = func(this.data[i], i, this.data);
-        }, this);
-    },
-    adjustEvery: function(interval, func) {
-        return this.mapEach(function(val, i, arr) {
-            if (i % interval === 0) {
-                return func(val, i, arr);
-            } else {
-                return val;
-            }
-        });
+    calcCluster: function(val, i, data, range, weight) {
+
+        var nodes = sliceRelativeRange(data, i, range);
+        var min   = (Math.min.apply(null, nodes) + val * weight) / (1 + weight);
+        var max   = (Math.max.apply(null, nodes) + val * weight) / (1 + weight);
+
+        return randomRange(min, max);
     },
     cluster: function(range, weight) {
         range  = arg(range, 1);
         weight = arg(weight, 1);
 
-        return this.mapEach(function(val, i, data) {
-
-            var minR = i - range;
-            var maxR = i + range + 1;
-
-            var minI = Math.max(minR, 0);
-            var maxI = Math.min(maxR, data.length);
-
-            var nodes = data.slice(minI, maxI);
-
-            var min = (Math.min.apply(null, nodes) + val * weight) / (1 + weight);
-            var max = (Math.max.apply(null, nodes) + val * weight) / (1 + weight);
-
-            return randomRange(min, max);
+        this.mapEach(function(val, i, data){
+            return this.calcCluster(val, i, data, range, weight);
         });
-    }
+        return this;
+    },
 };
 module.exports = methods;
 },{"../rng":11,"../util":12}],10:[function(require,module,exports){
@@ -1378,6 +1386,20 @@ module.exports = {
         }
         return a;
     },
+
+    /**
+     * Slice array values within given range relative to i
+     * @method sliceRelativeRange
+     * @param {Array} array
+     * @param {Number} i - index
+     * @param {Number} range - number of array values to include before and after i
+     * @return {Array}
+     */
+    sliceRelativeRange: function(array, i, range){
+        var minI = Math.max(i - range, 0);
+        var maxI = i + range + 1;
+        return array.slice(minI, maxI);
+    }
 
 };
 },{}]},{},[4])(4)

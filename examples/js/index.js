@@ -51,8 +51,7 @@
             min:    0,
             max:    16,
         });
-        hm2.dripByHeight();
-        hm2.cluster(1, 1);
+        hm2.dripByHeight(0.45, 0.75);
         hm2.cluster(1, 1);
         hm2.cluster(1, 1);
         hm2.cluster(1, 1);
