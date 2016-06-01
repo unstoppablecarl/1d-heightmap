@@ -82,6 +82,7 @@ var generators = {
 
         return hm;
     },
+
     keyIndexes: function(settings) {
         var defaults = {
             length:      null,
@@ -93,8 +94,8 @@ var generators = {
             interpolator: null,
             min:          0,
             max:          100,
-            minChange:    undefined,
-            maxChange:    undefined,
+            minSlope:    undefined,
+            maxSlope:    undefined,
         };
 
         var s = Object.assign({}, defaults, settings);
@@ -106,8 +107,8 @@ var generators = {
         var maxSpacing  = arg(s.maxSpacing, length * 0.1);
         var minHeight   = s.min;
         var maxHeight   = s.max;
-        var minChange   = s.minChange;
-        var maxChange   = s.maxChange;
+        var minSlope   = s.minSlope;
+        var maxSlope   = s.maxSlope;
 
         var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing, true);
 
@@ -122,21 +123,21 @@ var generators = {
 
                 if (positive) {
 
-                    if (minChange !== undefined) {
-                        min = Math.min(max, prev + minChange);
+                    if (minSlope !== undefined) {
+                        min = Math.min(max, prev + minSlope);
                     }
 
-                    if (maxChange !== undefined) {
-                        max = Math.min(max, prev + maxChange);
+                    if (maxSlope !== undefined) {
+                        max = Math.min(max, prev + maxSlope);
                     }
                 } else {
 
-                    if (minChange !== undefined) {
-                        min = Math.max(min, prev - maxChange);
+                    if (minSlope !== undefined) {
+                        min = Math.max(min, prev - maxSlope);
                     }
 
-                    if (maxChange !== undefined) {
-                        max = Math.max(min, prev - minChange);
+                    if (maxSlope !== undefined) {
+                        max = Math.max(min, prev - minSlope);
                     }
                 }
             }
@@ -169,6 +170,7 @@ var generators = {
 
         return out;
     },
+
     interpolateKeyIndexes: function(keyIndexes, interpolator) {
         var results = [];
         keyIndexes.forEach(function(item, i) {
@@ -195,6 +197,7 @@ var generators = {
 
         return results;
     },
+
     rough: function(settings) {
         var hm = oneDHeightmapFactory(settings);
 
