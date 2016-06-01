@@ -34,6 +34,18 @@ var methods = {
         return this;
     },
 
+    adjustWithPrevNext: function(func) {
+        var data = this.data;
+
+        for (var i = 1; i < data.length - 1; i++) {
+            var prev    = data[i - 1];
+            var current = data[i];
+            var next    = data[i + 1];
+            data[i] = func(prev, current, next, i, data);
+        }
+        return this;
+    },
+
     clamp: function(minValue, maxValue) {
         return this.mapEach(function(val) {
             val = Math.min(val, maxValue);
@@ -136,19 +148,54 @@ var methods = {
 
     smooth: function(weight) {
         weight = arg(weight, 1);
+        var total = 2 + weight;
 
-        var data = this.data,
-            i,
-            prev = data[0];
-        for (i = 1; i < data.length - 1; i++) {
-            var current = data[i],
-                next    = data[i + 1],
-                total   = 2 + weight;
-            current = current * weight;
-            data[i] = (prev + current + next) / total;
-            prev    = current;
-        }
-        return this;
+        return this.adjustWithPrevNext(function(prev, current, next) {
+            current *= weight;
+            return (prev + current + next) / total;
+        });
+    },
+
+    smoothSlopes: function(weight) {
+        weight = arg(weight, 1);
+
+        var total = 2 + weight;
+
+        return this.adjustWithPrevNext(function(prev, current, next) {
+
+            if (
+                // slope up
+                (prev < current && current < next) ||
+                // slope down
+                (prev > current && current > next)
+            ) {
+                return (prev + current + next) / total;
+            }
+
+            if (current == prev) {
+
+            }
+
+            return current;
+        });
+    },
+
+    smoothCorners: function() {
+
+        return this.adjustWithPrevNext(function(prev, current, next) {
+            var prevR = Math.round(prev);
+            var currentR = Math.round(current);
+            var nextR = Math.round(next);
+
+            if (
+                (prevR != nextR) &&
+                (currentR == prevR || currentR == nextR)
+            ) {
+                return (prev + next) / 2;
+            }
+
+            return current;
+        });
     },
 
     /** RNG transforms */
@@ -237,7 +284,7 @@ var methods = {
         range  = arg(range, 1);
         weight = arg(weight, 1);
 
-        this.mapEach(function(val, i, data){
+        this.mapEach(function(val, i, data) {
             return this.calcCluster(val, i, data, range, weight);
         });
         return this;

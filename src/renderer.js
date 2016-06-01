@@ -60,10 +60,10 @@ function draw(settings) {
             h = height;
         }
         ctx.fillRect(
-            x * scale,
-            y * scale,
-            w * scale,
-            h * scale
+            Math.round(x * scale),
+            Math.round(y * scale),
+            Math.round(w * scale),
+            Math.round(h * scale)
         );
 
         if (

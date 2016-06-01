@@ -11,9 +11,9 @@
     };
 
     var presenter = makePresenter({
-        canvasSize: 500,
-        scale:      1,
-        $container: $('.example-container'),
+        canvasSize:    500,
+        scale:         1,
+        $container:    $('.example-container'),
         originalColor: '#164b42'
     });
 
@@ -64,8 +64,11 @@
     });
 
 
-    var makeHm3 = function(){
+    var makeHm3 = function() {
         hm.mergeAdd(hm2);
+        hm.smoothSlopes();
+        hm.smoothCorners();
+        hm.smoothCorners();
     };
     makeHm3();
 
@@ -73,6 +76,10 @@
         heightmap:   hm,
         description: funcToString(makeHm3),
     });
+
+
+    hm.smoothSlopes()
+
 
 
 }());
