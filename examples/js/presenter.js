@@ -9,6 +9,7 @@ var makePresenter = function(settings) {
         scale:            1,
         debug:            false,
         canvasSize:       400,
+
         canvasMargin:     2,
         originalColor:    'rgba(150,50,50,0.5)',
         heightmap:        null,
@@ -39,7 +40,7 @@ var makePresenter = function(settings) {
         $container:   s.$container,
     };
 
-    function createCanvas(direction, width, height, label) {
+    function createCanvas(direction, width, height, label, description) {
         direction = direction || 'up';
 
         // swap if rotated
@@ -50,9 +51,10 @@ var makePresenter = function(settings) {
         }
 
         api.$container.append(compiled({
-            width:  width,
-            height: height,
-            label:  label,
+            width:       width,
+            height:      height,
+            label:       label,
+            description: description,
         }))
         var canvas = api.$container.find('.example').last().find('canvas')[0];
 
@@ -67,14 +69,15 @@ var makePresenter = function(settings) {
         var s = Object.assign({}, defaultSettings, settings);
 
         var hm;
-        var original  = s.heightmap;
-        var label     = s.label;
-        var transform = s.transform;
-        var direction = s.direction;
-        var width     = original.data.length;
-        var height    = original.max();
-        var x         = canvasMargin;
-        var y         = canvasMargin;
+        var original    = s.heightmap;
+        var label       = s.label;
+        var transform   = s.transform;
+        var direction   = s.direction;
+        var description = s.description;
+        var width       = original.data.length;
+        var height      = original.max();
+        var x           = canvasMargin;
+        var y           = canvasMargin;
 
         if (transform) {
 
@@ -87,7 +90,7 @@ var makePresenter = function(settings) {
             height = Math.max(height, hm.max());
         }
 
-        var canvas = api.createCanvas(direction, width, height, label);
+        var canvas = api.createCanvas(direction, width, height, label, description);
         var ctx    = canvas.getContext('2d');
 
         if (direction === 'up') {
