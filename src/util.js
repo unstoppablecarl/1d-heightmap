@@ -25,9 +25,14 @@ module.exports = {
      * @param {Number} range - number of array values to include before and after i
      * @return {Array}
      */
-    sliceRelativeRange: function(array, i, range){
+    sliceRelativeRange: function(array, i, range) {
         var minI = Math.max(i - range, 0);
         var maxI = i + range + 1;
+        return array.slice(minI, maxI);
+    },
+    arrayChunk: function(array, startIndex, endIndex) {
+        var minI = Math.max(startIndex, 0);
+        var maxI = endIndex + 1;
         return array.slice(minI, maxI);
     }
 

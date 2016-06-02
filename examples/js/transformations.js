@@ -127,17 +127,17 @@
     display({
         heightmap: hm,
         transform: function(hm) {
-            hm.distort();
+            hm.distort(25, 5);
         },
-        label: 'distort()'
+        label: 'distort(2, 5)'
     });
 
     display({
         heightmap: hm,
         transform: function(hm) {
-            hm.cluster(6, 6);
+            hm.distortChunk(50, 150);
         },
-        label: 'cluster(6, 6)'
+        label: 'distortChunk(150, 150)'
     });
 
     display({

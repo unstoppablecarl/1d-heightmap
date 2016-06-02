@@ -1,12 +1,16 @@
 'use strict';
-var arg                = require('../util').arg;
-var makeArray          = require('../util').makeArray;
-var sliceRelativeRange = require('../util').sliceRelativeRange;
+var util = require('../util');
+
+var arg                = util.arg;
+var makeArray          = util.makeArray;
+var sliceRelativeRange = util.sliceRelativeRange;
+var arrayChunk         = util.arrayChunk;
 
 var rng                 = require('../rng');
 var random              = rng.float;
 var randomRange         = rng.range;
 var randomSpacedIndexes = rng.spacedIndexes;
+var randomMinMaxRangeValue    = rng.minMaxRangeValue;
 
 var methods = {
     /* adjustments */
@@ -172,10 +176,6 @@ var methods = {
                 return (prev + current + next) / total;
             }
 
-            if (current == prev) {
-
-            }
-
             return current;
         });
     },
@@ -183,9 +183,9 @@ var methods = {
     smoothCorners: function() {
 
         return this.adjustWithPrevNext(function(prev, current, next) {
-            var prevR = Math.round(prev);
+            var prevR    = Math.round(prev);
             var currentR = Math.round(current);
-            var nextR = Math.round(next);
+            var nextR    = Math.round(next);
 
             if (
                 (prevR != nextR) &&
@@ -265,29 +265,30 @@ var methods = {
             return val;
         });
     },
-    distort: function(variance) {
-        variance = arg(variance, 0.2 * this.max());
 
-        return this.mapEach(function(val) {
-            return val + (randomRange(-variance * 0.5, variance * 0.5));
-        });
-    },
-    calcCluster: function(val, i, data, range, weight) {
-
-        var nodes = sliceRelativeRange(data, i, range);
-        var min   = (Math.min.apply(null, nodes) + val * weight) / (1 + weight);
-        var max   = (Math.max.apply(null, nodes) + val * weight) / (1 + weight);
-
-        return randomRange(min, max);
-    },
-    cluster: function(range, weight) {
+    /**
+     * Smooth with random adjustment
+     * @method smoothDistort
+     * @param {Number} range - number of indexes before and after each index to take into account.
+     * @param {Number} weight - weight of each index value when averaging with min / max
+     * @return {[type]}
+     */
+    distort: function(range, weight) {
         range  = arg(range, 1);
         weight = arg(weight, 1);
 
         this.mapEach(function(val, i, data) {
-            return this.calcCluster(val, i, data, range, weight);
+            var values = arrayChunk(data, i - range, i + range);
+            return randomMinMaxRangeValue(values, val, weight);
         });
         return this;
+    },
+    distortChunk: function(startIndex, endIndex, weight) {
+        var values = arrayChunk(this.data, startIndex, endIndex);
+
+        return this.adjustBetween(startIndex, endIndex, function(val, i, data){
+            return randomMinMaxRangeValue(values, val, weight);
+        });
     },
 };
 module.exports = methods;

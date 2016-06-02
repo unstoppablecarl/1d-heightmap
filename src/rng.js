@@ -13,8 +13,8 @@ var range = function(min, max) {
 };
 
 var spacedIndexes = function(length, minSpacing, maxSpacing, includeFirstAndLast) {
-    minSpacing = arg(minSpacing, length * 0.1);
-    maxSpacing = arg(maxSpacing, length * 0.3);
+    minSpacing          = arg(minSpacing, length * 0.1);
+    maxSpacing          = arg(maxSpacing, length * 0.3);
     includeFirstAndLast = arg(includeFirstAndLast, true);
 
     minSpacing = Math.max(1, minSpacing);
@@ -31,20 +31,32 @@ var spacedIndexes = function(length, minSpacing, maxSpacing, includeFirstAndLast
         }
     }
 
-    if(includeFirstAndLast){
-        indexes = [0].concat(indexes, [length-1]);
+    if (includeFirstAndLast) {
+        indexes = [0].concat(indexes, [length - 1]);
     }
 
     return indexes;
+};
+
+var minMaxRangeValue = function(array, value, weight) {
+    weight = arg(weight, 1);
+
+    var minVal = Math.min.apply(null, array);
+    var maxVal = Math.max.apply(null, array);
+
+    var min = (minVal + value * weight) / (1 + weight);
+    var max = (maxVal + value * weight) / (1 + weight);
+    return range(min, max);
 };
 
 var methods = {
     set: function(newRng) {
         rng = newRng;
     },
-    float:         float,
-    range:         range,
-    spacedIndexes: spacedIndexes,
+    float:            float,
+    range:            range,
+    spacedIndexes:    spacedIndexes,
+    minMaxRangeValue: minMaxRangeValue,
 };
 
 module.exports = methods;

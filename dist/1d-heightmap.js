@@ -932,14 +932,18 @@ var methods = {
 module.exports = methods;
 },{"../util":12}],9:[function(require,module,exports){
 'use strict';
-var arg                = require('../util').arg;
-var makeArray          = require('../util').makeArray;
-var sliceRelativeRange = require('../util').sliceRelativeRange;
+var util = require('../util');
+
+var arg                = util.arg;
+var makeArray          = util.makeArray;
+var sliceRelativeRange = util.sliceRelativeRange;
+var arrayChunk         = util.arrayChunk;
 
 var rng                 = require('../rng');
 var random              = rng.float;
 var randomRange         = rng.range;
 var randomSpacedIndexes = rng.spacedIndexes;
+var randomMinMaxRangeValue    = rng.minMaxRangeValue;
 
 var methods = {
     /* adjustments */
@@ -1105,10 +1109,6 @@ var methods = {
                 return (prev + current + next) / total;
             }
 
-            if (current == prev) {
-
-            }
-
             return current;
         });
     },
@@ -1116,9 +1116,9 @@ var methods = {
     smoothCorners: function() {
 
         return this.adjustWithPrevNext(function(prev, current, next) {
-            var prevR = Math.round(prev);
+            var prevR    = Math.round(prev);
             var currentR = Math.round(current);
-            var nextR = Math.round(next);
+            var nextR    = Math.round(next);
 
             if (
                 (prevR != nextR) &&
@@ -1198,29 +1198,30 @@ var methods = {
             return val;
         });
     },
-    distort: function(variance) {
-        variance = arg(variance, 0.2 * this.max());
 
-        return this.mapEach(function(val) {
-            return val + (randomRange(-variance * 0.5, variance * 0.5));
-        });
-    },
-    calcCluster: function(val, i, data, range, weight) {
-
-        var nodes = sliceRelativeRange(data, i, range);
-        var min   = (Math.min.apply(null, nodes) + val * weight) / (1 + weight);
-        var max   = (Math.max.apply(null, nodes) + val * weight) / (1 + weight);
-
-        return randomRange(min, max);
-    },
-    cluster: function(range, weight) {
+    /**
+     * Smooth with random adjustment
+     * @method smoothDistort
+     * @param {Number} range - number of indexes before and after each index to take into account.
+     * @param {Number} weight - weight of each index value when averaging with min / max
+     * @return {[type]}
+     */
+    distort: function(range, weight) {
         range  = arg(range, 1);
         weight = arg(weight, 1);
 
         this.mapEach(function(val, i, data) {
-            return this.calcCluster(val, i, data, range, weight);
+            var values = arrayChunk(data, i - range, i + range);
+            return randomMinMaxRangeValue(values, val, weight);
         });
         return this;
+    },
+    distortChunk: function(startIndex, endIndex, weight) {
+        var values = arrayChunk(this.data, startIndex, endIndex);
+
+        return this.adjustBetween(startIndex, endIndex, function(val, i, data){
+            return randomMinMaxRangeValue(values, val, weight);
+        });
     },
 };
 module.exports = methods;
@@ -1378,8 +1379,8 @@ var range = function(min, max) {
 };
 
 var spacedIndexes = function(length, minSpacing, maxSpacing, includeFirstAndLast) {
-    minSpacing = arg(minSpacing, length * 0.1);
-    maxSpacing = arg(maxSpacing, length * 0.3);
+    minSpacing          = arg(minSpacing, length * 0.1);
+    maxSpacing          = arg(maxSpacing, length * 0.3);
     includeFirstAndLast = arg(includeFirstAndLast, true);
 
     minSpacing = Math.max(1, minSpacing);
@@ -1396,20 +1397,32 @@ var spacedIndexes = function(length, minSpacing, maxSpacing, includeFirstAndLast
         }
     }
 
-    if(includeFirstAndLast){
-        indexes = [0].concat(indexes, [length-1]);
+    if (includeFirstAndLast) {
+        indexes = [0].concat(indexes, [length - 1]);
     }
 
     return indexes;
+};
+
+var minMaxRangeValue = function(array, value, weight) {
+    weight = arg(weight, 1);
+
+    var minVal = Math.min.apply(null, array);
+    var maxVal = Math.max.apply(null, array);
+
+    var min = (minVal + value * weight) / (1 + weight);
+    var max = (maxVal + value * weight) / (1 + weight);
+    return range(min, max);
 };
 
 var methods = {
     set: function(newRng) {
         rng = newRng;
     },
-    float:         float,
-    range:         range,
-    spacedIndexes: spacedIndexes,
+    float:            float,
+    range:            range,
+    spacedIndexes:    spacedIndexes,
+    minMaxRangeValue: minMaxRangeValue,
 };
 
 module.exports = methods;
@@ -1442,9 +1455,14 @@ module.exports = {
      * @param {Number} range - number of array values to include before and after i
      * @return {Array}
      */
-    sliceRelativeRange: function(array, i, range){
+    sliceRelativeRange: function(array, i, range) {
         var minI = Math.max(i - range, 0);
         var maxI = i + range + 1;
+        return array.slice(minI, maxI);
+    },
+    arrayChunk: function(array, startIndex, endIndex) {
+        var minI = Math.max(startIndex, 0);
+        var maxI = endIndex + 1;
         return array.slice(minI, maxI);
     }
 
