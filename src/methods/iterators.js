@@ -21,6 +21,5 @@ var methods = {
         return this;
     },
 
-
 };
 module.exports = methods;

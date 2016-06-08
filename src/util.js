@@ -34,6 +34,20 @@ module.exports = {
         var minI = Math.max(startIndex, 0);
         var maxI = endIndex + 1;
         return array.slice(minI, maxI);
+    },
+    arrayFilterIndexes: function(arr, func) {
+        var out = [];
+        arr.forEach(function(val, i) {
+            if (func(val, i, arr)) {
+                out.push(i);
+            }
+        });
+        return out;
+    },
+    arraySum: function(arr, defaultVal) {
+        return arr.reduce(function(prev, current){
+            return prev + current
+        }, defaultVal);
     }
 
 };

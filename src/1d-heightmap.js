@@ -7,7 +7,7 @@ var factory = function OneDHeightmap(settings) {
 factory.methods = Object.assign(
     {
         factory: factory
-},
+    },
     require('./methods/mergers'),
     require('./methods/init'),
     require('./methods/iterators'),

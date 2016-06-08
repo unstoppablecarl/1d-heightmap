@@ -94,8 +94,8 @@ var generators = {
             interpolator: null,
             min:          0,
             max:          100,
-            minSlope:    undefined,
-            maxSlope:    undefined,
+            minSlope:     undefined,
+            maxSlope:     undefined,
         };
 
         var s = Object.assign({}, defaults, settings);
@@ -107,38 +107,26 @@ var generators = {
         var maxSpacing  = arg(s.maxSpacing, length * 0.1);
         var minHeight   = s.min;
         var maxHeight   = s.max;
-        var minSlope   = s.minSlope;
-        var maxSlope   = s.maxSlope;
+        var minSlope    = s.minSlope;
+        var maxSlope    = s.maxSlope;
 
         var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing, true);
 
-        var getValue = function(prev) {
+        var getValue = function(prev, index) {
             var min = minHeight;
             var max = maxHeight;
 
-
             if (prev !== undefined) {
 
-                var positive = random() < 0.5;
+                var prevVal  = prev.value;
+                var distance = index - prev.index;
 
-                if (positive) {
+                if (minSlope !== undefined) {
+                    min = Math.max(min, prevVal + (distance * minSlope));
+                }
 
-                    if (minSlope !== undefined) {
-                        min = Math.min(max, prev + minSlope);
-                    }
-
-                    if (maxSlope !== undefined) {
-                        max = Math.min(max, prev + maxSlope);
-                    }
-                } else {
-
-                    if (minSlope !== undefined) {
-                        min = Math.max(min, prev - maxSlope);
-                    }
-
-                    if (maxSlope !== undefined) {
-                        max = Math.max(min, prev - minSlope);
-                    }
+                if (maxSlope !== undefined) {
+                    max = Math.min(max, prevVal + (distance * maxSlope));
                 }
             }
 
@@ -153,15 +141,16 @@ var generators = {
             if (i === 0 && startHeight !== undefined) {
                 value = startHeight;
             } else {
-                value = getValue(prev);
+                value = getValue(prev, index);
             }
 
-            prev = value;
-
-            return {
+            var result = {
                 index: index,
                 value: value,
             };
+            prev = result;
+
+            return result;
         });
 
         if (endHeight !== undefined) {
