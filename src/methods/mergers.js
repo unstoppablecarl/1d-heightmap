@@ -76,6 +76,12 @@ var methods = {
             return (a + b) / 2;
         }, maxLength, defaultValue);
     },
+    mergeAverageWeight: function(heightmap, weight, maxLength, defaultValue) {
+        weight = arg(weight, 1);
+        return this.merge(heightmap, function(a, b) {
+            return (a*weight + b) / (1 + weight);
+        }, maxLength, defaultValue);
+    },
     mergeToScale: function(heightmap, maxLength, defaultValue) {
         var max = this.max();
         return this.merge(heightmap, function(a, b) {
