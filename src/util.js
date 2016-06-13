@@ -45,6 +45,7 @@ module.exports = {
         return out;
     },
     arraySum: function(arr, defaultVal) {
+        defaultVal = arg(defaultVal, 0);
         return arr.reduce(function(prev, current){
             return prev + current
         }, defaultVal);
