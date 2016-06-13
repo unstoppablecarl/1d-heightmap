@@ -118,7 +118,6 @@
     l2.add(height * 0.66);
     l3.add(height * 0.66);
 
-
     // display({
     //     heightmap: l1,
     //     label:     'l1'
@@ -144,9 +143,14 @@
     l2 = roughen(l2);
     l3 = roughen(l3);
 
-    l1 = addTrees(l1);
-    l2 = addTrees(l2);
-    l3 = addTrees(l3);
+    var t1 = addTrees(l1);
+    l1 = applyWave(t1, l1, 0, 0.1);
+
+    var t2 = addTrees(l2);
+    l2 = applyWave(t2, l2, 0.1, 0.5);
+
+    var t3 = addTrees(l3);
+    l3 = applyWave(t3, l3, 0.5, 3);
 
     presenter.$container.append('<canvas>');
     var canvas = presenter.$container.find('canvas').last()[0];
@@ -180,8 +184,6 @@
 
 
     function addTrees(hm, weight) {
-        var original = hm;
-
         hm = hm.copy();
         var hm2 = oneDHeightmap.generate.random({
             length: length, // 500
@@ -194,31 +196,36 @@
         hm.mergeAdd(hm2);
         hm.smoothSlopes();
         hm.smoothCorners();
+        return hm;
+    }
+
+    function applyWave(target, source, min, max){
 
         var wave = oneDHeightmap.generate.perlin({
             length:       length,
             minSpacing:   length * 0.15,
             maxSpacing:   length * 0.25,
-            min:          0.1,
-            max:          3,
+            min:          0,
+            max:          1,
             minSlope:     -0.1,
             maxSlope:     0.1,
             interpolator: oneDHeightmap.interpolate.sine
         });
 
-        hm.merge(original, function(a, b, i) {
+        wave.add(min)
+        wave.scaleHeightTo(max - min);
+
+        return target.copy().merge(source, function(a, b, i) {
             var w = wave.data[i];
             w = Math.min(1, w);
             var delta = a - b;
             return b + (delta * w);
         });
-
-        return hm;
     }
 
 
     function roughen(hm) {
-
+        hm = hm.copy();
         var length = hm.data.length;
 
         var entropy = oneDHeightmap.generate.perlin({
