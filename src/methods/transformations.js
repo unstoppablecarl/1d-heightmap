@@ -98,7 +98,7 @@ var methods = {
         this.data.reverse();
         return this;
     },
-    scaleToHeight: function(maxHeight) {
+    scaleHeightTo: function(maxHeight) {
         var ratio = maxHeight / this.max();
         return this.multiply(ratio);
     },
