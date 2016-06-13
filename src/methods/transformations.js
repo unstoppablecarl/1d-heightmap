@@ -66,6 +66,11 @@ var methods = {
             return Math.max(val, minValue);
         })
     },
+
+    trimHeight: function(){
+        var min = this.min();
+        return this.subtract(min);
+    },
     add: function(val) {
         return this.mapEach(function(v) {
             return v + val;
