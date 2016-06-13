@@ -187,6 +187,60 @@ var generators = {
         return results;
     },
 
+    addKeyIndexes: function(settings) {
+        var defaults = {
+            keyIndexes:    null,
+            indexRangeMin: 0.20,
+            indexRangeMax: 0.80,
+            valueRangeMin: 0.20,
+            valueRangeMax: 0.80,
+        };
+
+
+        var s = Object.assign({}, defaults, settings);
+
+        var keyIndexes    = s.keyIndexes;
+        var indexRangeMin = s.indexRangeMin;
+        var indexRangeMax = s.indexRangeMax;
+        var valueRangeMin = s.valueRangeMin;
+        var valueRangeMax = s.valueRangeMax;
+
+        var result = [];
+
+        keyIndexes.forEach(function(item, i, data) {
+            var next = data[i + 1];
+
+            if (!next) {
+                return;
+            }
+
+            var indexDelta = next.index - item.index;
+            var indexMin   = item.index + (indexDelta * indexRangeMin);
+            var indexMax   = item.index + (indexDelta * indexRangeMax);
+
+            var valueDelta = next.value - item.value;
+
+            var valueMin = item.value + (valueDelta * valueRangeMin);
+            var valueMax = item.value + (valueDelta * valueRangeMax);
+
+            var add = {
+                index: Math.round(randomRange(indexMin, indexMax)),
+                value: randomRange(valueMin, valueMax),
+            };
+
+            result.push(item);
+            result.push(add);
+        });
+
+        return result;
+    },
+
+    fromKeyIndexes: function(keyIndexes, interpolator) {
+        return oneDHeightmapFactory({
+            data: this.interpolateKeyIndexes(keyIndexes, interpolator)
+        });
+    },
+
     rough: function(settings) {
         var hm = oneDHeightmapFactory(settings);
 
