@@ -47,8 +47,8 @@
                 maxSpacing:   20,
                 min:          10,
                 max:          500,
-                minSlope:     1,
-                maxSlope:     16,
+                minSlope:     -1,
+                maxSlope:     1,
             });
         };
         makeHm();

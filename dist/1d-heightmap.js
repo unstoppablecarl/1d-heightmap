@@ -328,7 +328,7 @@ var factory = function OneDHeightmap(settings) {
 factory.methods = Object.assign(
     {
         factory: factory
-},
+    },
     require('./methods/mergers'),
     require('./methods/init'),
     require('./methods/iterators'),
@@ -433,8 +433,8 @@ var generators = {
             interpolator: null,
             min:          0,
             max:          100,
-            minSlope:    undefined,
-            maxSlope:    undefined,
+            minSlope:     undefined,
+            maxSlope:     undefined,
         };
 
         var s = Object.assign({}, defaults, settings);
@@ -446,8 +446,8 @@ var generators = {
         var maxSpacing  = arg(s.maxSpacing, length * 0.1);
         var minHeight   = s.min;
         var maxHeight   = s.max;
-        var minSlope   = s.minSlope;
-        var maxSlope   = s.maxSlope;
+        var minSlope    = s.minSlope;
+        var maxSlope    = s.maxSlope;
 
         var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing, true);
 
@@ -457,13 +457,8 @@ var generators = {
 
             if (prev !== undefined) {
 
-                var prevVal = prev.value;
+                var prevVal  = prev.value;
                 var distance = index - prev.index;
-
-                var aMin = (distance * minSlope);
-                var aMax = (distance * maxSlope);
-
-                console.log('dis', distance, aMin, aMax);
 
                 if (minSlope !== undefined) {
                     min = Math.max(min, prevVal + (distance * minSlope));
@@ -529,6 +524,60 @@ var generators = {
         });
 
         return results;
+    },
+
+    addKeyIndexes: function(settings) {
+        var defaults = {
+            keyIndexes:    null,
+            indexRangeMin: 0.20,
+            indexRangeMax: 0.80,
+            valueRangeMin: 0.20,
+            valueRangeMax: 0.80,
+        };
+
+
+        var s = Object.assign({}, defaults, settings);
+
+        var keyIndexes    = s.keyIndexes;
+        var indexRangeMin = s.indexRangeMin;
+        var indexRangeMax = s.indexRangeMax;
+        var valueRangeMin = s.valueRangeMin;
+        var valueRangeMax = s.valueRangeMax;
+
+        var result = [];
+
+        keyIndexes.forEach(function(item, i, data) {
+            var next = data[i + 1];
+
+            if (!next) {
+                return;
+            }
+
+            var indexDelta = next.index - item.index;
+            var indexMin   = item.index + (indexDelta * indexRangeMin);
+            var indexMax   = item.index + (indexDelta * indexRangeMax);
+
+            var valueDelta = next.value - item.value;
+
+            var valueMin = item.value + (valueDelta * valueRangeMin);
+            var valueMax = item.value + (valueDelta * valueRangeMax);
+
+            var add = {
+                index: Math.round(randomRange(indexMin, indexMax)),
+                value: randomRange(valueMin, valueMax),
+            };
+
+            result.push(item);
+            result.push(add);
+        });
+
+        return result;
+    },
+
+    fromKeyIndexes: function(keyIndexes, interpolator) {
+        return oneDHeightmapFactory({
+            data: this.interpolateKeyIndexes(keyIndexes, interpolator)
+        });
     },
 
     rough: function(settings) {
@@ -914,6 +963,12 @@ var methods = {
             return (a + b) / 2;
         }, maxLength, defaultValue);
     },
+    mergeAverageWeight: function(heightmap, weight, maxLength, defaultValue) {
+        weight = arg(weight, 1);
+        return this.merge(heightmap, function(a, b) {
+            return (a*weight + b) / (1 + weight);
+        }, maxLength, defaultValue);
+    },
     mergeToScale: function(heightmap, maxLength, defaultValue) {
         var max = this.max();
         return this.merge(heightmap, function(a, b) {
@@ -992,6 +1047,11 @@ var methods = {
             return Math.max(val, minValue);
         })
     },
+
+    trimHeight: function(){
+        var min = this.min();
+        return this.subtract(min);
+    },
     add: function(val) {
         return this.mapEach(function(v) {
             return v + val;
@@ -1024,7 +1084,7 @@ var methods = {
         this.data.reverse();
         return this;
     },
-    scaleToHeight: function(maxHeight) {
+    scaleHeightTo: function(maxHeight) {
         var ratio = maxHeight / this.max();
         return this.multiply(ratio);
     },
@@ -1399,8 +1459,8 @@ var randomFilteredArrayIndex = function(arr, func) {
 }
 
 var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
-    var min = minSpacing;
-    var max = maxSpacing;
+    var min = Math.round(minSpacing);
+    var max = Math.round(maxSpacing);
 
     var chunkSizes = getChunkSizes(length, min, max);
     var sum        = arraySum(chunkSizes);
@@ -1409,8 +1469,8 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
         chunkSizes = distribute(chunkSizes, min, max, length);
     }
 
-    var d = 0;
-    var indexes = chunkSizes.map(function(val){
+    var d       = 0;
+    var indexes = chunkSizes.map(function(val) {
         d += val;
         return d - 1;
     });
@@ -1446,9 +1506,10 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
     }
 
     function distributeFromValid(arr, min, max, length) {
-        var invalidIndex = arr.length - 1;
+        // start with remaining
+        var newIndex = length - arraySum(arr);
 
-        while (arr[invalidIndex] < min) {
+        while (arraySum(arr) + newIndex < length) {
 
             var validIndex = randomFilteredArrayIndex(arr, function(val) {
                 return val > min
@@ -1459,20 +1520,18 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
             }
 
             arr[validIndex]--;
-            arr[invalidIndex]++;
+            newIndex++;
         }
-
+        // add new index
+        arr.push(newIndex);
         return arr;
     }
 
     function distributeToValid(arr, min, max, length) {
-        arr = arr.filter(function(val) {
-            return val >= min;
-        });
 
         while (arraySum(arr) < length) {
             var validIndex = randomFilteredArrayIndex(arr, function(val) {
-                return val > min
+                return val < max;
             });
 
             if (validIndex === false) {
@@ -1485,23 +1544,23 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
     }
 
     function distribute(arr, min, max, length) {
-
         var availableToRemove = 0;
         var availableToAdd    = 0;
-        var invalid;
+
+        // remove invalid
+        arr = arr.filter(function(val) {
+            return val >= min;
+        });
 
         arr.forEach(function(val, i, data) {
-            if (val < min || val > max) {
-                invalid = val;
-                return;
-            }
             availableToRemove += val - min;
             availableToAdd += max - val;
         });
+        var sum = arraySum(arr);
 
-        var needToAdd              = min - invalid;
+        var needToAdd              = length - sum;
         var canDistributeFromValid = availableToRemove >= needToAdd;
-        var canDistributeToValid   = availableToAdd >= invalid + needToAdd;
+        var canDistributeToValid   = availableToAdd >= needToAdd;
 
         var options = [];
 
@@ -1516,10 +1575,11 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
             return arr;
         }
 
-        var func    = randomArrayValue(options);
+        var func = randomArrayValue(options);
         return func(arr, min, max, length);
 
     }
+
 };
 
 
@@ -1536,7 +1596,6 @@ var methods = {
 };
 
 module.exports = methods;
-
 },{"./util":12}],12:[function(require,module,exports){
 'use strict';
 
@@ -1585,6 +1644,7 @@ module.exports = {
         return out;
     },
     arraySum: function(arr, defaultVal) {
+        defaultVal = arg(defaultVal, 0);
         return arr.reduce(function(prev, current){
             return prev + current
         }, defaultVal);
