@@ -211,6 +211,7 @@ var generators = {
             var next = data[i + 1];
 
             if (!next) {
+                result.push(item);
                 return;
             }
 
