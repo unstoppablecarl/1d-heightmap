@@ -119,30 +119,26 @@
     l3.add(height * 0.66);
 
 
-    // var l3KeyIndexes = makeKeyIndexes();
-    // var l3 = make(l3KeyIndexes);
+    // display({
+    //     heightmap: l1,
+    //     label:     'l1'
+    // })
 
+    // display({
+    //     heightmap: l1,
+    //     label:     'l2',
+    //     transform: function() {
+    //         return l2;
+    //     }
+    // });
 
-    display({
-        heightmap: l1,
-        label:     'l1'
-    })
-
-    display({
-        heightmap: l1,
-        label:     'l2',
-        transform: function() {
-            return l2;
-        }
-    });
-
-    display({
-        heightmap: l2,
-        label:     'l3',
-        transform: function() {
-            return l3;
-        }
-    });
+    // display({
+    //     heightmap: l2,
+    //     label:     'l3',
+    //     transform: function() {
+    //         return l3;
+    //     }
+    // });
 
     l1 = roughen(l1);
     l2 = roughen(l2);
