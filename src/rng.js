@@ -40,8 +40,8 @@ var randomFilteredArrayIndex = function(arr, func) {
 }
 
 var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
-    var min = minSpacing;
-    var max = maxSpacing;
+    var min = Math.round(minSpacing);
+    var max = Math.round(maxSpacing);
 
     var chunkSizes = getChunkSizes(length, min, max);
     var sum        = arraySum(chunkSizes);
@@ -50,8 +50,8 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
         chunkSizes = distribute(chunkSizes, min, max, length);
     }
 
-    var d = 0;
-    var indexes = chunkSizes.map(function(val){
+    var d       = 0;
+    var indexes = chunkSizes.map(function(val) {
         d += val;
         return d - 1;
     });
@@ -87,9 +87,10 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
     }
 
     function distributeFromValid(arr, min, max, length) {
-        var invalidIndex = arr.length - 1;
+        // start with remaining
+        var newIndex = length - arraySum(arr);
 
-        while (arr[invalidIndex] < min) {
+        while (arraySum(arr) + newIndex < length) {
 
             var validIndex = randomFilteredArrayIndex(arr, function(val) {
                 return val > min
@@ -100,20 +101,18 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
             }
 
             arr[validIndex]--;
-            arr[invalidIndex]++;
+            newIndex++;
         }
-
+        // add new index
+        arr.push(newIndex);
         return arr;
     }
 
     function distributeToValid(arr, min, max, length) {
-        arr = arr.filter(function(val) {
-            return val >= min;
-        });
 
         while (arraySum(arr) < length) {
             var validIndex = randomFilteredArrayIndex(arr, function(val) {
-                return val > min
+                return val < max;
             });
 
             if (validIndex === false) {
@@ -126,23 +125,23 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
     }
 
     function distribute(arr, min, max, length) {
-
         var availableToRemove = 0;
         var availableToAdd    = 0;
-        var invalid;
+
+        // remove invalid
+        arr = arr.filter(function(val) {
+            return val >= min;
+        });
 
         arr.forEach(function(val, i, data) {
-            if (val < min || val > max) {
-                invalid = val;
-                return;
-            }
             availableToRemove += val - min;
             availableToAdd += max - val;
         });
+        var sum = arraySum(arr);
 
-        var needToAdd              = min - invalid;
+        var needToAdd              = length - sum;
         var canDistributeFromValid = availableToRemove >= needToAdd;
-        var canDistributeToValid   = availableToAdd >= invalid + needToAdd;
+        var canDistributeToValid   = availableToAdd >= needToAdd;
 
         var options = [];
 
@@ -157,10 +156,11 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
             return arr;
         }
 
-        var func    = randomArrayValue(options);
+        var func = randomArrayValue(options);
         return func(arr, min, max, length);
 
     }
+
 };
 
 
