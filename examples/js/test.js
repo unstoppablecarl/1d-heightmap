@@ -39,7 +39,7 @@
         return makeRenderer({
 
             color:   '#214640',
-            speed:   50,
+            speed:   15,
             makeHm1: function() {
                 var hm = make(hmWidth, range, min);
                 hm = roughen1(hm);
@@ -65,7 +65,7 @@
         return makeRenderer({
 
             color:   '#2c675e',
-            speed:   75,
+            speed:   50,
             makeHm1: function() {
                 var hm = make(hmWidth, range, min);
                 hm = roughen1(hm);
