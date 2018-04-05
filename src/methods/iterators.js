@@ -10,7 +10,7 @@ var methods = {
         return this;
     },
     map: function(func, context) {
-        return this.copy({
+        return this.factory({
             data: this.data.map(func, context)
         });
     },
