@@ -322,10 +322,10 @@
 
         entropy2.trimHeight().scaleHeightTo(length * 0.08).subtract(entropy2.max());
 
+        hm.add(entropy2.max() * 2);
         taper(entropy2);
 
         hm.mergeAdd(entropy2);
-        hm.add(entropy2.max() * 2);
 
         return hm;
     }
