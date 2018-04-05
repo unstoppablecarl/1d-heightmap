@@ -70,12 +70,16 @@
                 var hm = make(hmWidth, range, min);
                 hm = roughen1(hm);
                 hm = roughen2(hm);
+                hm = addTrees(hm, 8);
+
                 return hm;
             },
             makeHm2: function(hm1) {
                 var hm = make(hmWidth, range, min, hm1);
                 hm = roughen1(hm);
                 hm = roughen2(hm);
+                hm = addTrees(hm, 8);
+                
                 return hm;
             }
         })
@@ -94,11 +98,13 @@
             makeHm1: function() {
                 var hm = make(hmWidth, range, min);
                 hm = roughen1(hm);
+                hm = addTrees(hm, 16);
                 return hm;
             },
             makeHm2: function(hm1) {
                 var hm = make(hmWidth, range, min, hm1);
                 hm = roughen1(hm);
+                hm = addTrees(hm, 16);
                 return hm;
             }
         })
@@ -353,6 +359,22 @@
 
         var taperHm = oneDHeightmap.generate.fromKeyIndexes(taperKeyIndexes);
         return hm.mergeMultiply(taperHm);
+    }
+
+    function addTrees(hm, height) {
+        hm = hm.copy();
+        var hm2 = oneDHeightmap.generate.random({
+            length: hm.data.length, // 500
+            min:    0,
+            max:    height,
+        });
+        hm2.dripByHeight(0.45, 0.75);
+        hm2.smooth();
+
+        hm = hm.mergeAdd(hm2);
+        hm.smoothSlopes();
+        hm.smoothCorners();
+        return hm;
     }
 
 }());
