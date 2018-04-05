@@ -30,7 +30,7 @@ var makePresenter = function(settings) {
 
     // length of example heightmap
     var length    = Math.floor(canvasSize / scale);
-    var maxHeight = Math.floor(length * 0.5);
+    var maxHeight = s.maxHeight || Math.floor(length * 0.5);
 
     var api = {
         display:      display,

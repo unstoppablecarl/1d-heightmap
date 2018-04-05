@@ -5,6 +5,7 @@ var oneDHeightmapFactory = require('./1d-heightmap');
 var rng                  = require('./rng');
 var random               = rng.float;
 var randomRange          = rng.range;
+var randomRangeInt       = rng.rangeInt;
 var randomSpacedIndexes  = rng.spacedIndexes;
 
 var interpolate = require('./interpolators');
@@ -37,7 +38,7 @@ var generators = {
         var s = Object.assign({}, defaults, settings);
 
         hm.mapEach(function(val, i) {
-            return randomRange(s.min, s.max);
+            return randomRangeInt(s.min, s.max);
         });
 
         if (s.startHeight) {
@@ -83,164 +84,6 @@ var generators = {
         return hm;
     },
 
-    keyIndexes: function(settings) {
-        var defaults = {
-            length:      null,
-            startHeight: undefined,
-            endHeight:   undefined,
-
-            minSpacing:   undefined,
-            maxSpacing:   undefined,
-            interpolator: null,
-            min:          0,
-            max:          100,
-            minSlope:     undefined,
-            maxSlope:     undefined,
-        };
-
-        var s = Object.assign({}, defaults, settings);
-
-        var length      = s.length;
-        var startHeight = s.startHeight;
-        var endHeight   = s.endHeight;
-        var minSpacing  = arg(s.minSpacing, length * 0.1);
-        var maxSpacing  = arg(s.maxSpacing, length * 0.1);
-        var minHeight   = s.min;
-        var maxHeight   = s.max;
-        var minSlope    = s.minSlope;
-        var maxSlope    = s.maxSlope;
-
-        var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing, true);
-
-        var getValue = function(prev, index) {
-            var min = minHeight;
-            var max = maxHeight;
-
-            if (prev !== undefined) {
-
-                var prevVal  = prev.value;
-                var distance = index - prev.index;
-
-                if (minSlope !== undefined) {
-                    min = Math.max(min, prevVal + (distance * minSlope));
-                }
-
-                if (maxSlope !== undefined) {
-                    max = Math.min(max, prevVal + (distance * maxSlope));
-                }
-            }
-
-            return randomRange(min, max);
-        };
-
-        var prev;
-
-        var out = keyIndexes.map(function(index, i, data) {
-            var value;
-
-            if (i === 0 && startHeight !== undefined) {
-                value = startHeight;
-            } else {
-                value = getValue(prev, index);
-            }
-
-            var result = {
-                index: index,
-                value: value,
-            };
-            prev = result;
-
-            return result;
-        });
-
-        if (endHeight !== undefined) {
-            out[out.length - 1].value = endHeight;
-        }
-
-        return out;
-    },
-
-    interpolateKeyIndexes: function(keyIndexes, interpolator) {
-        var results = [];
-        keyIndexes.forEach(function(item, i) {
-
-            results.push(item.value);
-
-            var nextItem = keyIndexes[i + 1];
-
-            if (!nextItem) {
-                return;
-            }
-            var curerntKeyIndex = item.index;
-            var nextKeyIndex    = nextItem.index;
-            var wavelength      = Math.abs(nextKeyIndex - curerntKeyIndex - 1);
-            var a               = item.value;
-            var b               = nextItem.value;
-
-            for (var j = 0; j < wavelength; j++) {
-                var x               = j / wavelength;
-                var interpolatedVal = interpolator(a, b, x);
-                results.push(interpolatedVal);
-            }
-        });
-
-        return results;
-    },
-
-    addKeyIndexes: function(settings) {
-        var defaults = {
-            keyIndexes:    null,
-            indexRangeMin: 0.20,
-            indexRangeMax: 0.80,
-            valueRangeMin: 0.20,
-            valueRangeMax: 0.80,
-        };
-
-
-        var s = Object.assign({}, defaults, settings);
-
-        var keyIndexes    = s.keyIndexes;
-        var indexRangeMin = s.indexRangeMin;
-        var indexRangeMax = s.indexRangeMax;
-        var valueRangeMin = s.valueRangeMin;
-        var valueRangeMax = s.valueRangeMax;
-
-        var result = [];
-
-        keyIndexes.forEach(function(item, i, data) {
-            var next = data[i + 1];
-
-            if (!next) {
-                result.push(item);
-                return;
-            }
-
-            var indexDelta = next.index - item.index;
-            var indexMin   = item.index + (indexDelta * indexRangeMin);
-            var indexMax   = item.index + (indexDelta * indexRangeMax);
-
-            var valueDelta = next.value - item.value;
-
-            var valueMin = item.value + (valueDelta * valueRangeMin);
-            var valueMax = item.value + (valueDelta * valueRangeMax);
-
-            var add = {
-                index: Math.round(randomRange(indexMin, indexMax)),
-                value: randomRange(valueMin, valueMax),
-            };
-
-            result.push(item);
-            result.push(add);
-        });
-
-        return result;
-    },
-
-    fromKeyIndexes: function(keyIndexes, interpolator) {
-        return oneDHeightmapFactory({
-            data: this.interpolateKeyIndexes(keyIndexes, interpolator)
-        });
-    },
 
     rough: function(settings) {
         var hm = oneDHeightmapFactory(settings);
@@ -375,7 +218,7 @@ var generators = {
             }
             // random deviation
             else if (random() < s.deviationChance) {
-                height = randomRange(adjustedMin, adjustedMax);
+                height = randomRangeInt(adjustedMin, adjustedMax);
             }
 
             hm.data[i] = height;
@@ -399,4 +242,5 @@ var generators = {
     },
 };
 
+Object.assign(generators, require('./key-indexes'));
 module.exports = generators;

@@ -8,7 +8,7 @@ var arrayChunk         = util.arrayChunk;
 
 var rng                 = require('../rng');
 var random              = rng.float;
-var randomRange         = rng.range;
+var randomRangeInt         = rng.rangeInt;
 var randomSpacedIndexes = rng.spacedIndexes;
 var randomMinMaxRangeValue    = rng.minMaxRangeValue;
 
@@ -244,7 +244,7 @@ var methods = {
 
         return this.mapEach(function(val) {
             if (random() < chance) {
-                var newVal = val + randomRange(minLength, maxLength);
+                var newVal = val + randomRangeInt(minLength, maxLength);
                 return newVal;
             }
             return val;

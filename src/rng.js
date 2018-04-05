@@ -7,39 +7,93 @@ var arraySum           = util.arraySum;
 
 var rng = Math.random;
 
-var randomFloat = function() {
+function randomBool(){
+    return rng() > 0.5;
+}
+
+function arrayMin(arr) {
+    return Math.min.apply(null, arr);
+}
+
+function arrayMax(arr) {
+    return Math.max.apply(null, arr);
+}
+
+function randomFloat() {
     return rng();
-};
+}
 
-var randomRange = function(min, max) {
+function randomRangeInt(min, max) {
     return Math.floor(rng() * (max - min + 1)) + min;
-};
+}
 
-var minMaxRangeValue = function(array, value, weight) {
+function randomRangeFloat(min, max) {
+    return rng() * (max - min) + min;
+}
+
+function minMaxRangeValue(array, value, weight) {
     weight = arg(weight, 1);
+    value *= weight;
 
-    var minVal = Math.min.apply(null, array);
-    var maxVal = Math.max.apply(null, array);
+    var minVal = arrayMin(array);
+    var maxVal = arrayMax(array);
 
-    var min = (minVal + value * weight) / (1 + weight);
-    var max = (maxVal + value * weight) / (1 + weight);
-    return randomRange(min, max);
-};
+    var min = (minVal + value) / (1 + weight);
+    var max = (maxVal + value) / (1 + weight);
 
-var randomArrayValue = function(arr) {
-    return arr[randomRange(0, arr.length - 1)];
-};
+    return randomRangeInt(min, max);
+}
 
-var randomFilteredArrayIndex = function(arr, func) {
+function randomArrayIndex(arr) {
+    return randomRangeInt(0, arr.length - 1);
+}
+
+function randomArrayValue(arr) {
+    return arr[randomArrayIndex(arr)];
+}
+
+function randomArrayIndexValue(arr, func) {
+
+    var index = randomArrayIndex(arr);
+    return {
+        index: index,
+        value: arr[index]
+    };
+}
+
+function randomFilteredArrayIndex(arr, func) {
     var validIndexes = arrayFilterIndexes(arr, func);
     if (!validIndexes.length) {
         return false;
     }
-
     return randomArrayValue(validIndexes);
 }
 
-var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
+function randomFilteredArrayValue(arr, func) {
+    var filtered = arr.filter(func);
+    if (!filtered.length) {
+        return false;
+    }
+    return randomArrayValue(filtered);
+}
+
+function randomFilteredArrayIndexValue(arr, func) {
+
+    var filtered = [];
+
+    arr.forEach(function(val, i, data) {
+        if (func(val, i, data)) {
+            filtered.push({
+                index: i,
+                value: val,
+            });
+        }
+    });
+
+    return randomArrayValue(filtered);
+}
+
+function randomSpacedIndexes(length, minSpacing, maxSpacing) {
     var min = Math.round(minSpacing);
     var max = Math.round(maxSpacing);
 
@@ -76,7 +130,7 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
         var chunks    = [];
 
         while (remaining > 0) {
-            var chunkSize = randomRange(min, max);
+            var chunkSize = randomRangeInt(min, max);
             chunkSize = Math.min(remaining, chunkSize);
 
             remaining -= chunkSize;
@@ -161,19 +215,29 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
 
     }
 
-};
-
+}
 
 var methods = {
     set: function(newRng) {
         rng = newRng;
     },
-    float:              randomFloat,
-    range:              randomRange,
-    spacedIndexes:      randomSpacedIndexes,
-    minMaxRangeValue:   minMaxRangeValue,
-    arrayValue:         randomArrayValue,
-    filteredArrayIndex: randomFilteredArrayIndex
+    bool:       randomBool,
+    float:      randomFloat,
+    range:      randomRangeFloat,
+    rangeFloat: randomRangeFloat,
+    rangeInt:   randomRangeInt,
+
+    spacedIndexes:    randomSpacedIndexes,
+    minMaxRangeValue: minMaxRangeValue,
+
+    arrayIndex:      randomArrayIndex,
+    arrayValue:      randomArrayValue,
+    arrayIndexValue: randomArrayIndexValue,
+
+    filteredArrayIndex:      randomFilteredArrayIndex,
+    filteredArrayValue:      randomFilteredArrayValue,
+    filteredArrayIndexValue: randomFilteredArrayIndexValue,
+
 };
 
 module.exports = methods;

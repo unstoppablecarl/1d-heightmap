@@ -336,7 +336,7 @@ factory.methods = Object.assign(
 );
 
 module.exports = factory;
-},{"./methods/init":6,"./methods/iterators":7,"./methods/mergers":8,"./methods/transformations":9}],3:[function(require,module,exports){
+},{"./methods/init":8,"./methods/iterators":9,"./methods/mergers":10,"./methods/transformations":11}],3:[function(require,module,exports){
 'use strict';
 
 var arg                  = require('./util').arg;
@@ -344,9 +344,14 @@ var oneDHeightmapFactory = require('./1d-heightmap');
 var rng                  = require('./rng');
 var random               = rng.float;
 var randomRange          = rng.range;
+var randomRangeInt       = rng.rangeInt;
 var randomSpacedIndexes  = rng.spacedIndexes;
 
 var interpolate = require('./interpolators');
+
+
+
+
 
 var generators = {
 
@@ -376,7 +381,7 @@ var generators = {
         var s = Object.assign({}, defaults, settings);
 
         hm.mapEach(function(val, i) {
-            return randomRange(s.min, s.max);
+            return randomRangeInt(s.min, s.max);
         });
 
         if (s.startHeight) {
@@ -422,164 +427,6 @@ var generators = {
         return hm;
     },
 
-    keyIndexes: function(settings) {
-        var defaults = {
-            length:      null,
-            startHeight: undefined,
-            endHeight:   undefined,
-
-            minSpacing:   undefined,
-            maxSpacing:   undefined,
-            interpolator: null,
-            min:          0,
-            max:          100,
-            minSlope:     undefined,
-            maxSlope:     undefined,
-        };
-
-        var s = Object.assign({}, defaults, settings);
-
-        var length      = s.length;
-        var startHeight = s.startHeight;
-        var endHeight   = s.endHeight;
-        var minSpacing  = arg(s.minSpacing, length * 0.1);
-        var maxSpacing  = arg(s.maxSpacing, length * 0.1);
-        var minHeight   = s.min;
-        var maxHeight   = s.max;
-        var minSlope    = s.minSlope;
-        var maxSlope    = s.maxSlope;
-
-        var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing, true);
-
-        var getValue = function(prev, index) {
-            var min = minHeight;
-            var max = maxHeight;
-
-            if (prev !== undefined) {
-
-                var prevVal  = prev.value;
-                var distance = index - prev.index;
-
-                if (minSlope !== undefined) {
-                    min = Math.max(min, prevVal + (distance * minSlope));
-                }
-
-                if (maxSlope !== undefined) {
-                    max = Math.min(max, prevVal + (distance * maxSlope));
-                }
-            }
-
-            return randomRange(min, max);
-        };
-
-        var prev;
-
-        var out = keyIndexes.map(function(index, i, data) {
-            var value;
-
-            if (i === 0 && startHeight !== undefined) {
-                value = startHeight;
-            } else {
-                value = getValue(prev, index);
-            }
-
-            var result = {
-                index: index,
-                value: value,
-            };
-            prev = result;
-
-            return result;
-        });
-
-        if (endHeight !== undefined) {
-            out[out.length - 1].value = endHeight;
-        }
-
-        return out;
-    },
-
-    interpolateKeyIndexes: function(keyIndexes, interpolator) {
-        var results = [];
-        keyIndexes.forEach(function(item, i) {
-
-            results.push(item.value);
-
-            var nextItem = keyIndexes[i + 1];
-
-            if (!nextItem) {
-                return;
-            }
-            var curerntKeyIndex = item.index;
-            var nextKeyIndex    = nextItem.index;
-            var wavelength      = Math.abs(nextKeyIndex - curerntKeyIndex - 1);
-            var a               = item.value;
-            var b               = nextItem.value;
-
-            for (var j = 0; j < wavelength; j++) {
-                var x               = j / wavelength;
-                var interpolatedVal = interpolator(a, b, x);
-                results.push(interpolatedVal);
-            }
-        });
-
-        return results;
-    },
-
-    addKeyIndexes: function(settings) {
-        var defaults = {
-            keyIndexes:    null,
-            indexRangeMin: 0.20,
-            indexRangeMax: 0.80,
-            valueRangeMin: 0.20,
-            valueRangeMax: 0.80,
-        };
-
-
-        var s = Object.assign({}, defaults, settings);
-
-        var keyIndexes    = s.keyIndexes;
-        var indexRangeMin = s.indexRangeMin;
-        var indexRangeMax = s.indexRangeMax;
-        var valueRangeMin = s.valueRangeMin;
-        var valueRangeMax = s.valueRangeMax;
-
-        var result = [];
-
-        keyIndexes.forEach(function(item, i, data) {
-            var next = data[i + 1];
-
-            if (!next) {
-                result.push(item);
-                return;
-            }
-
-            var indexDelta = next.index - item.index;
-            var indexMin   = item.index + (indexDelta * indexRangeMin);
-            var indexMax   = item.index + (indexDelta * indexRangeMax);
-
-            var valueDelta = next.value - item.value;
-
-            var valueMin = item.value + (valueDelta * valueRangeMin);
-            var valueMax = item.value + (valueDelta * valueRangeMax);
-
-            var add = {
-                index: Math.round(randomRange(indexMin, indexMax)),
-                value: randomRange(valueMin, valueMax),
-            };
-
-            result.push(item);
-            result.push(add);
-        });
-
-        return result;
-    },
-
-    fromKeyIndexes: function(keyIndexes, interpolator) {
-        return oneDHeightmapFactory({
-            data: this.interpolateKeyIndexes(keyIndexes, interpolator)
-        });
-    },
 
     rough: function(settings) {
         var hm = oneDHeightmapFactory(settings);
@@ -714,7 +561,7 @@ var generators = {
             }
             // random deviation
             else if (random() < s.deviationChance) {
-                height = randomRange(adjustedMin, adjustedMax);
+                height = randomRangeInt(adjustedMin, adjustedMax);
             }
 
             hm.data[i] = height;
@@ -738,8 +585,9 @@ var generators = {
     },
 };
 
+Object.assign(generators, require('./key-indexes'));
 module.exports = generators;
-},{"./1d-heightmap":2,"./interpolators":5,"./rng":11,"./util":12}],4:[function(require,module,exports){
+},{"./1d-heightmap":2,"./interpolators":5,"./key-indexes":6,"./rng":13,"./util":14}],4:[function(require,module,exports){
 'use strict';
 
 var api = {
@@ -751,7 +599,7 @@ var api = {
 };
 
 module.exports = api;
-},{"./1d-heightmap":2,"./generators":3,"./interpolators":5,"./renderer":10,"./rng":11}],5:[function(require,module,exports){
+},{"./1d-heightmap":2,"./generators":3,"./interpolators":5,"./renderer":12,"./rng":13}],5:[function(require,module,exports){
 'use strict';
 
 var easing = require('easing-utils');
@@ -821,6 +669,515 @@ module.exports = {
 },{"easing-utils":1}],6:[function(require,module,exports){
 'use strict';
 
+var arg                  = require('../util').arg;
+var oneDHeightmapFactory = require('../1d-heightmap');
+var rng                  = require('../rng');
+var random               = rng.float;
+var randomRange          = rng.range;
+var randomRangeInt       = rng.rangeInt;
+var randomSpacedIndexes  = rng.spacedIndexes;
+
+var interpolators       = require('../interpolators');
+var math                = require('../math');
+var getDistance         = math.getDistance;
+var getNormalizedVector = math.getNormalizedVector;
+
+module.exports = {
+    keyIndexes:                createKeyIndexes,
+    fromKeyIndexes:            fromKeyIndexes,
+    interpolateKeyIndexes:     interpolateKeyIndexes,
+    addKeyIndexes:             addKeyIndexes,
+    addDisplacementKeyIndexes: addDisplacementKeyIndexes,
+}
+
+function createKeyIndexes(settings) {
+    var defaults = {
+        length:      null,
+        startHeight: undefined,
+        endHeight:   undefined,
+
+        minSpacing:   undefined,
+        maxSpacing:   undefined,
+        interpolator: null,
+        min:          0,
+        max:          100,
+        minSlope:     undefined,
+        maxSlope:     undefined,
+    };
+
+    var s = Object.assign({}, defaults, settings);
+
+    var length      = s.length;
+    var startHeight = s.startHeight;
+    var endHeight   = s.endHeight;
+    var minSpacing  = arg(s.minSpacing, length * 0.1);
+    var maxSpacing  = arg(s.maxSpacing, length * 0.1);
+    var minHeight   = s.min;
+    var maxHeight   = s.max;
+    var minSlope    = s.minSlope;
+    var maxSlope    = s.maxSlope;
+
+    var keyIndexes = randomSpacedIndexes(length, minSpacing, maxSpacing);
+
+    var prev;
+
+    var out = keyIndexes.map(function(index, i, data) {
+        var value;
+
+        if (i === 0 && startHeight !== undefined) {
+            value = startHeight;
+        } else {
+            value = getValue(prev, index, minHeight, maxHeight, minSlope, maxSlope);
+        }
+
+        var result = {
+            index: index,
+            value: value,
+        };
+
+        prev = result;
+
+        return result;
+    });
+
+    if (endHeight !== undefined) {
+        out[out.length - 1].value = endHeight;
+    }
+
+    return out;
+}
+
+function getValue(prev, index, minHeight, maxHeight, minSlope, maxSlope) {
+    var min = minHeight;
+    var max = maxHeight;
+
+    if (prev !== undefined) {
+
+        var prevVal  = prev.value;
+        var distance = index - prev.index;
+
+        if (minSlope !== undefined) {
+            min = Math.max(min, prevVal + (distance * minSlope));
+        }
+
+        if (maxSlope !== undefined) {
+            max = Math.min(max, prevVal + (distance * maxSlope));
+        }
+    }
+
+    return randomRangeInt(min, max);
+}
+
+function interpolateKeyIndexes(keyIndexes, interpolator) {
+    var results = [];
+    interpolator = arg(interpolator, interpolators.linear);
+
+    keyIndexes.forEach(function(item, i) {
+
+        results.push(item.value);
+
+        var next = keyIndexes[i + 1];
+
+        if (!next) {
+            return;
+        }
+        var curerntKeyIndex = item.index;
+        var nextKeyIndex    = next.index;
+        var wavelength      = Math.abs(nextKeyIndex - curerntKeyIndex - 1);
+        var a               = item.value;
+        var b               = next.value;
+
+        for (var j = 0; j < wavelength; j++) {
+            var x               = j / wavelength;
+            var interpolatedVal = interpolator(a, b, x);
+            results.push(interpolatedVal);
+        }
+    });
+
+    return results;
+}
+
+function fromKeyIndexes(keyIndexes, interpolator) {
+    return oneDHeightmapFactory({
+        data: this.interpolateKeyIndexes(keyIndexes, interpolator)
+    });
+}
+
+
+function addKeyIndexes(settings) {
+    var defaults = {
+        keyIndexes: null,
+
+        // position on line determined by percent of distance between points
+        posRatioMin: 0.33,
+        posRatioMax: 0.66,
+
+        // distance from pos on line determined by percent of distance between points
+        distRatioMin: 0.1,
+        distRatioMax: 0.2,
+
+        // absolute min / max distance
+        distMin: undefined,
+        distMax: undefined,
+
+        direction:     undefined,
+        upDirection:   undefined,
+        downDirection: undefined,
+
+        upPosRatioMin:   undefined,
+        upPosRatioMax:   undefined,
+        downPosRatioMin: undefined,
+        downPosRatioMax: undefined,
+
+        upDistRatioMin:   undefined,
+        upDistRatioMax:   undefined,
+        downDistRatioMin: undefined,
+        downDistRatioMax: undefined,
+    };
+
+    var s = Object.assign({}, defaults, settings);
+
+    var keyIndexes = s.keyIndexes;
+
+    var result = [];
+
+    keyIndexes.forEach(function(item, i, data) {
+        var next = data[i + 1];
+
+        if (!next) {
+            result.push(item);
+            return;
+        }
+
+        var splitSettings = Object.assign({
+            left:  item,
+            right: next,
+        }, settings);
+
+        var add = splitKeyIndexes(splitSettings);
+
+        result.push(item);
+        result.push(add);
+
+    });
+
+    return result;
+
+}
+
+function splitKeyIndexes(settings) {
+    var defaults = {
+        left:  null,
+        right: null,
+
+        // position on line determined by percent of distance between points
+        posRatioMin: 0.33,
+        posRatioMax: 0.66,
+
+        // distance from pos on line determined by percent of distance between points
+        distRatioMin: 0.1,
+        distRatioMax: 0.2,
+
+        // absolute min / max distance
+        distMin: undefined,
+        distMax: undefined,
+
+        direction:     undefined,
+        upDirection:   undefined,
+        downDirection: undefined,
+
+        upPosRatioMin:   undefined,
+        upPosRatioMax:   undefined,
+        downPosRatioMin: undefined,
+        downPosRatioMax: undefined,
+
+        upDistRatioMin:   undefined,
+        upDistRatioMax:   undefined,
+        downDistRatioMin: undefined,
+        downDistRatioMax: undefined,
+    };
+
+    var s = Object.assign({}, defaults, settings);
+
+    var left  = s.left;
+    var right = s.right;
+
+    var slopeUp = left.value < right.value;
+
+    var posRatioMin  = s.posRatioMin;
+    var posRatioMax  = s.posRatioMax;
+    var distRatioMin = s.distRatioMin;
+    var distRatioMax = s.distRatioMax;
+    var direction    = s.direction;
+    var distMin      = s.distMin;
+    var distMax      = s.distMax;
+
+    if (slopeUp) {
+
+        posRatioMin  = arg(s.upPosRatioMin, posRatioMin);
+        posRatioMax  = arg(s.upPosRatioMax, posRatioMax);
+        distRatioMin = arg(s.upDistRatioMin, distRatioMin);
+        distRatioMax = arg(s.upDistRatioMax, distRatioMax);
+        direction    = arg(s.upDirection, direction);
+
+    } else {
+
+        posRatioMin  = arg(s.downPosRatioMin, posRatioMin);
+        posRatioMax  = arg(s.downPosRatioMax, posRatioMax);
+        distRatioMin = arg(s.downDistRatioMin, distRatioMin);
+        distRatioMax = arg(s.downDistRatioMax, distRatioMax);
+        direction    = arg(s.downDirection, direction);
+    }
+
+    direction = arg(direction, random() < 0.5 ? 'up' : 'down');
+
+    var posRatio  = randomRange(posRatioMin, posRatioMax);
+    var distRatio = randomRange(distRatioMin, distRatioMax);
+
+    var a = {
+        x: left.index,
+        y: left.value,
+    };
+
+    var b = {
+        x: right.index,
+        y: right.value,
+    };
+
+    var p = generateMidPoint(a, b, posRatio, distRatio, direction, distMin, distMax);
+
+    return {
+        value: p.y,
+        index: p.x
+    };
+}
+
+function generateMidPoint(a, b, cPosRatio, distRatio, direction, distMin, distMax) {
+    var vDist = getDistance(a, b);
+    var v     = getNormalizedVector(a, b, vDist);
+
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+
+    // c is a point on line ab at given ratio
+    var c = {
+        x: (dx * cPosRatio),
+        y: (dy * cPosRatio)
+    };
+    // distance proportional to ab length
+    var dist = vDist * distRatio;
+
+    if (distMin !== undefined) {
+        dist = Math.max(distMin);
+    }
+    if (distMax !== undefined) {
+        dist = Math.min(distMax);
+    }
+
+    var vDir = vectorRotate90(v, direction);
+
+    var d = {
+        x: vDir.x * dist,
+        y: vDir.y * dist,
+    };
+
+    // width of line ab
+    var ab = dx;
+    // postion of d offset from c
+    var dC = c.x + d.x;
+    // scale to fit horizontal bounds of ab
+    var scale = false;
+
+    // d left of a
+    if (dC < 0) {
+        scale = -(c.x / d.x);
+    }
+    // d right of b
+    else if (dC > ab) {
+        scale = (dx - c.x) / (d.x);
+    }
+
+    if (scale !== false) {
+        d.x *= scale;
+        d.y *= scale;
+    }
+
+    // add offsets to d
+    d.x += c.x + a.x;
+    d.y += c.y + a.y;
+
+    d.x = Math.round(d.x);
+
+    if (d.x === a.x) {
+        d.x += 1;
+    }
+
+    if (d.x === b.x) {
+        d.x -= 1;
+    }
+
+    // set c offset for debug
+    // c.x += a.x;
+    // c.y += a.y;
+
+    return d;
+}
+
+function vectorRotate90(v, direction){
+    if (direction === 'left' || direction === 'up') {
+        return {
+            x: -v.y,
+            y: v.x,
+        }
+    }
+    else if (direction === 'right' || direction === 'down') {
+        return {
+            x: v.y,
+            y: -v.x,
+        }
+    }
+}
+
+function addDisplacementKeyIndexes(settings) {
+    var defaults = {
+        keyIndexes:           null,
+        startingDisplacement: 50,
+        roughness:            0.77,
+        maxIterations:        1,
+        calcDisplacement:     defaultCalcDisplacement,
+    };
+
+    var s = Object.assign({}, defaults, settings);
+
+    var keyIndexes           = s.keyIndexes;
+    var roughness            = s.roughness;
+    var maxIterations        = s.maxIterations;
+    var calcDisplacement     = s.calcDisplacement;
+    var startingDisplacement = s.startingDisplacement;
+
+    keyIndexes = keyIndexes.map(function(item) {
+        return Object.assign({}, item);
+    });
+
+    var results = [];
+
+    keyIndexes.forEach(function(item, i, data) {
+        var next = data[i + 1];
+        if (!next) {
+            results.push(item);
+            return;
+        }
+
+        var arr = split(item, next, startingDisplacement);
+        results = results.concat(item, arr);
+    });
+
+    return results;
+
+    function defaultCalcDisplacement(current, left, right, iteration) {
+        if (iteration == 1) {
+            return current;
+        }
+        return current * roughness;
+    }
+
+    function split(left, right, displacement, iteration) {
+        iteration = iteration || 0;
+        iteration++;
+
+        if (left.index + 1 == right.index) {
+            return false;
+        }
+
+        displacement = calcDisplacement(displacement, left, right, iteration);
+
+        var mid = splitNodes(left, right, displacement);
+
+        if (iteration >= maxIterations) {
+            return mid;
+        }
+
+        var result = [];
+
+        var canSplitLeft  = left.index + 1 !== mid.index;
+        var canSplitRight = right.index - 1 !== mid.index;
+
+        if (canSplitLeft) {
+
+            var leftSplit = split(left, mid, displacement, iteration);
+
+            if (leftSplit) {
+                result = result.concat(leftSplit);
+            }
+        }
+
+        result.push(mid);
+
+        if (canSplitRight) {
+
+            var rightSplit = split(mid, right, displacement, iteration);
+            if (rightSplit) {
+                result = result.concat(rightSplit);
+            }
+        }
+        return result;
+    }
+}
+
+function splitNodes(left, right, displacement) {
+    var midIndex   = Math.floor((left.index + right.index) * 0.5);
+    var midValue   = (left.value + right.value) * 0.5;
+    var adjustment = (randomRange(-1, 1) * displacement);
+
+    return {
+        index: midIndex,
+        value: midValue + adjustment,
+    };
+}
+},{"../1d-heightmap":2,"../interpolators":5,"../math":7,"../rng":13,"../util":14}],7:[function(require,module,exports){
+'use strict';
+
+
+module.exports = {
+    getDistance: getDistance,
+    getNormalizedVector: getNormalizedVector,
+    isAbove: isAbove,
+};
+
+function getDistance(a, b) {
+
+    var dx = b.x - a.x
+    var dy = b.y - a.y
+
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function getNormalizedVector(a, b, distance) {
+    distance = distance || getDistance(a, b);
+
+    var dx = b.x - a.x
+    var dy = b.y - a.y
+
+    return {
+        x: dx / distance,
+        y: dy / distance,
+    };
+}
+
+function isAbove(x1, y1, x2, y2, x, y) {
+
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+
+    // cross product
+    var d = (x - x1) * dy - (y - y1) * dx;
+
+    return d < 0;
+}
+
+},{}],8:[function(require,module,exports){
+'use strict';
+
 var makeArray = require('../util').makeArray;
 
 var methods = {
@@ -858,7 +1215,7 @@ var methods = {
 
 module.exports = methods;
 
-},{"../util":12}],7:[function(require,module,exports){
+},{"../util":14}],9:[function(require,module,exports){
 'use strict';
 
 var arg = require('../util').arg;
@@ -871,7 +1228,7 @@ var methods = {
         return this;
     },
     map: function(func, context) {
-        return this.copy({
+        return this.factory({
             data: this.data.map(func, context)
         });
     },
@@ -885,7 +1242,7 @@ var methods = {
 };
 module.exports = methods;
 
-},{"../util":12}],8:[function(require,module,exports){
+},{"../util":14}],10:[function(require,module,exports){
 'use strict';
 
 var arg = require('../util').arg;
@@ -979,7 +1336,7 @@ var methods = {
     },
 };
 module.exports = methods;
-},{"../util":12}],9:[function(require,module,exports){
+},{"../util":14}],11:[function(require,module,exports){
 'use strict';
 var util = require('../util');
 
@@ -990,7 +1347,7 @@ var arrayChunk         = util.arrayChunk;
 
 var rng                 = require('../rng');
 var random              = rng.float;
-var randomRange         = rng.range;
+var randomRangeInt         = rng.rangeInt;
 var randomSpacedIndexes = rng.spacedIndexes;
 var randomMinMaxRangeValue    = rng.minMaxRangeValue;
 
@@ -1226,7 +1583,7 @@ var methods = {
 
         return this.mapEach(function(val) {
             if (random() < chance) {
-                var newVal = val + randomRange(minLength, maxLength);
+                var newVal = val + randomRangeInt(minLength, maxLength);
                 return newVal;
             }
             return val;
@@ -1279,7 +1636,7 @@ var methods = {
     },
 };
 module.exports = methods;
-},{"../rng":11,"../util":12}],10:[function(require,module,exports){
+},{"../rng":13,"../util":14}],12:[function(require,module,exports){
 'use strict';
 
 function draw(settings) {
@@ -1417,7 +1774,7 @@ function debugDraw(heightmap, ctx, x, y, direction, scale, val, color) {
 }
 
 module.exports = draw;
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 var util               = require('./util');
@@ -1427,39 +1784,93 @@ var arraySum           = util.arraySum;
 
 var rng = Math.random;
 
-var randomFloat = function() {
+function randomBool(){
+    return rng() > 0.5;
+}
+
+function arrayMin(arr) {
+    return Math.min.apply(null, arr);
+}
+
+function arrayMax(arr) {
+    return Math.max.apply(null, arr);
+}
+
+function randomFloat() {
     return rng();
-};
+}
 
-var randomRange = function(min, max) {
+function randomRangeInt(min, max) {
     return Math.floor(rng() * (max - min + 1)) + min;
-};
+}
 
-var minMaxRangeValue = function(array, value, weight) {
+function randomRangeFloat(min, max) {
+    return rng() * (max - min) + min;
+}
+
+function minMaxRangeValue(array, value, weight) {
     weight = arg(weight, 1);
+    value *= weight;
 
-    var minVal = Math.min.apply(null, array);
-    var maxVal = Math.max.apply(null, array);
+    var minVal = arrayMin(array);
+    var maxVal = arrayMax(array);
 
-    var min = (minVal + value * weight) / (1 + weight);
-    var max = (maxVal + value * weight) / (1 + weight);
-    return randomRange(min, max);
-};
+    var min = (minVal + value) / (1 + weight);
+    var max = (maxVal + value) / (1 + weight);
 
-var randomArrayValue = function(arr) {
-    return arr[randomRange(0, arr.length - 1)];
-};
+    return randomRangeInt(min, max);
+}
 
-var randomFilteredArrayIndex = function(arr, func) {
+function randomArrayIndex(arr) {
+    return randomRangeInt(0, arr.length - 1);
+}
+
+function randomArrayValue(arr) {
+    return arr[randomArrayIndex(arr)];
+}
+
+function randomArrayIndexValue(arr, func) {
+
+    var index = randomArrayIndex(arr);
+    return {
+        index: index,
+        value: arr[index]
+    };
+}
+
+function randomFilteredArrayIndex(arr, func) {
     var validIndexes = arrayFilterIndexes(arr, func);
     if (!validIndexes.length) {
         return false;
     }
-
     return randomArrayValue(validIndexes);
 }
 
-var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
+function randomFilteredArrayValue(arr, func) {
+    var filtered = arr.filter(func);
+    if (!filtered.length) {
+        return false;
+    }
+    return randomArrayValue(filtered);
+}
+
+function randomFilteredArrayIndexValue(arr, func) {
+
+    var filtered = [];
+
+    arr.forEach(function(val, i, data) {
+        if (func(val, i, data)) {
+            filtered.push({
+                index: i,
+                value: val,
+            });
+        }
+    });
+
+    return randomArrayValue(filtered);
+}
+
+function randomSpacedIndexes(length, minSpacing, maxSpacing) {
     var min = Math.round(minSpacing);
     var max = Math.round(maxSpacing);
 
@@ -1496,7 +1907,7 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
         var chunks    = [];
 
         while (remaining > 0) {
-            var chunkSize = randomRange(min, max);
+            var chunkSize = randomRangeInt(min, max);
             chunkSize = Math.min(remaining, chunkSize);
 
             remaining -= chunkSize;
@@ -1581,23 +1992,33 @@ var randomSpacedIndexes = function(length, minSpacing, maxSpacing) {
 
     }
 
-};
-
+}
 
 var methods = {
     set: function(newRng) {
         rng = newRng;
     },
-    float:              randomFloat,
-    range:              randomRange,
-    spacedIndexes:      randomSpacedIndexes,
-    minMaxRangeValue:   minMaxRangeValue,
-    arrayValue:         randomArrayValue,
-    filteredArrayIndex: randomFilteredArrayIndex
+    bool:       randomBool,
+    float:      randomFloat,
+    range:      randomRangeFloat,
+    rangeFloat: randomRangeFloat,
+    rangeInt:   randomRangeInt,
+
+    spacedIndexes:    randomSpacedIndexes,
+    minMaxRangeValue: minMaxRangeValue,
+
+    arrayIndex:      randomArrayIndex,
+    arrayValue:      randomArrayValue,
+    arrayIndexValue: randomArrayIndexValue,
+
+    filteredArrayIndex:      randomFilteredArrayIndex,
+    filteredArrayValue:      randomFilteredArrayValue,
+    filteredArrayIndexValue: randomFilteredArrayIndexValue,
+
 };
 
 module.exports = methods;
-},{"./util":12}],12:[function(require,module,exports){
+},{"./util":14}],14:[function(require,module,exports){
 'use strict';
 
 var arg = function(val, defaultVal) {
