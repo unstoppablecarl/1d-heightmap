@@ -349,10 +349,6 @@ var randomSpacedIndexes  = rng.spacedIndexes;
 
 var interpolate = require('./interpolators');
 
-
-
-
-
 var generators = {
 
     /**
@@ -1345,11 +1341,11 @@ var makeArray          = util.makeArray;
 var sliceRelativeRange = util.sliceRelativeRange;
 var arrayChunk         = util.arrayChunk;
 
-var rng                 = require('../rng');
-var random              = rng.float;
+var rng                    = require('../rng');
+var random                 = rng.float;
 var randomRangeInt         = rng.rangeInt;
-var randomSpacedIndexes = rng.spacedIndexes;
-var randomMinMaxRangeValue    = rng.minMaxRangeValue;
+var randomSpacedIndexes    = rng.spacedIndexes;
+var randomMinMaxRangeValue = rng.minMaxRangeValue;
 
 var methods = {
     /* adjustments */
@@ -1406,7 +1402,7 @@ var methods = {
         })
     },
 
-    trimHeight: function(){
+    trimHeight: function() {
         var min = this.min();
         return this.subtract(min);
     },
@@ -1445,6 +1441,13 @@ var methods = {
     scaleHeightTo: function(maxHeight) {
         var ratio = maxHeight / this.max();
         return this.multiply(ratio);
+    },
+    scaleHeightToMinMax: function(minHeight, maxHeight) {
+        this.trimHeight();
+        this.scaleHeightTo(maxHeight);
+        this.add(minHeight);
+        
+        return this;
     },
     scaleLengthTo: function(newLenght, interpolateFunc) {
         var data      = this.data;
@@ -1630,7 +1633,7 @@ var methods = {
     distortChunk: function(startIndex, endIndex, weight) {
         var values = arrayChunk(this.data, startIndex, endIndex);
 
-        return this.adjustBetween(startIndex, endIndex, function(val, i, data){
+        return this.adjustBetween(startIndex, endIndex, function(val, i, data) {
             return randomMinMaxRangeValue(values, val, weight);
         });
     },
@@ -1784,7 +1787,7 @@ var arraySum           = util.arraySum;
 
 var rng = Math.random;
 
-function randomBool(){
+function randomBool() {
     return rng() > 0.5;
 }
 
@@ -1881,13 +1884,7 @@ function randomSpacedIndexes(length, minSpacing, maxSpacing) {
         chunkSizes = distribute(chunkSizes, min, max, length);
     }
 
-    var d       = 0;
-    var indexes = chunkSizes.map(function(val) {
-        d += val;
-        return d - 1;
-    });
-
-    indexes = [0].concat(indexes);
+    var indexes = chunkSizesToIndexes(chunkSizes);
 
     return indexes;
 
@@ -1915,6 +1912,43 @@ function randomSpacedIndexes(length, minSpacing, maxSpacing) {
         }
 
         return chunks;
+    }
+
+    function distribute(arr, min, max, length) {
+        var availableToRemove = 0;
+        var availableToAdd    = 0;
+
+        // remove invalid
+        arr = arr.filter(function(val) {
+            return val >= min;
+        });
+
+        arr.forEach(function(val, i, data) {
+            availableToRemove += val - min;
+            availableToAdd += max - val;
+        });
+        var sum = arraySum(arr);
+
+        var needToAdd              = length - sum;
+        var canDistributeFromValid = availableToRemove >= needToAdd;
+        var canDistributeToValid   = availableToAdd >= needToAdd;
+
+        var options = [];
+
+        if (canDistributeFromValid) {
+            options.push(distributeFromValid);
+        }
+        if (canDistributeToValid) {
+            options.push(distributeToValid);
+        }
+
+        if (!options.length) {
+            return arr;
+        }
+
+        var func = randomArrayValue(options);
+        return func(arr, min, max, length);
+
     }
 
     function distributeFromValid(arr, min, max, length) {
@@ -1955,43 +1989,16 @@ function randomSpacedIndexes(length, minSpacing, maxSpacing) {
         return arr;
     }
 
-    function distribute(arr, min, max, length) {
-        var availableToRemove = 0;
-        var availableToAdd    = 0;
-
-        // remove invalid
-        arr = arr.filter(function(val) {
-            return val >= min;
+    function chunkSizesToIndexes(chunkSizes) {
+        var d       = 0;
+        var indexes = chunkSizes.map(function(val) {
+            d += val;
+            return d - 1;
         });
 
-        arr.forEach(function(val, i, data) {
-            availableToRemove += val - min;
-            availableToAdd += max - val;
-        });
-        var sum = arraySum(arr);
-
-        var needToAdd              = length - sum;
-        var canDistributeFromValid = availableToRemove >= needToAdd;
-        var canDistributeToValid   = availableToAdd >= needToAdd;
-
-        var options = [];
-
-        if (canDistributeFromValid) {
-            options.push(distributeFromValid);
-        }
-        if (canDistributeToValid) {
-            options.push(distributeToValid);
-        }
-
-        if (!options.length) {
-            return arr;
-        }
-
-        var func = randomArrayValue(options);
-        return func(arr, min, max, length);
-
+        indexes = [0].concat(indexes);
+        return indexes;
     }
-
 }
 
 var methods = {
