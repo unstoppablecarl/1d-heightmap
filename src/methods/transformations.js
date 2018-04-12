@@ -109,7 +109,8 @@ var methods = {
     },
     scaleHeightToMinMax: function(minHeight, maxHeight) {
         this.trimHeight();
-        this.scaleHeightTo(maxHeight);
+        var delta = maxHeight - minHeight;
+        this.scaleHeightTo(delta);
         this.add(minHeight);
         
         return this;
