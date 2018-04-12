@@ -112,7 +112,7 @@ var methods = {
         var delta = maxHeight - minHeight;
         this.scaleHeightTo(delta);
         this.add(minHeight);
-        
+
         return this;
     },
     scaleLengthTo: function(newLenght, interpolateFunc) {
@@ -210,7 +210,43 @@ var methods = {
             return current;
         });
     },
+    smoothStartHeight: function(endIndex, height) {
+        var startIndex = this.data.length - endIndex;
 
+        return this
+            .reverse()
+            .smoothEndHeight(startIndex, height)
+            .reverse();
+    },
+    smoothStartHeightFromPercent: function(smoothEndPercent, height) {
+        var endIndex = Math.floor(this.data.length * smoothEndPercent);
+
+        return this.smoothStartHeight(endIndex, height);
+    },
+    smoothEndHeight: function(startIndex, height) {
+
+        var length = this.data.length;
+
+        this.mapEach(function(val, index) {
+
+            if (index < startIndex) {
+                return val;
+            }
+
+            var percent = (index - startIndex) / (length - startIndex);
+            var delta   = height - val;
+            var mod     = delta * percent;
+
+            return val + mod;
+        });
+
+        return this;
+    },
+    smoothEndHeightFromPercent: function(smoothStartPercent, height) {
+        var length = this.data.length;
+        var startIndex = Math.floor(length * smoothStartPercent);
+        return this.smoothEndHeight(startIndex, height);
+    },
     /** RNG transforms */
     weightedRatioAdjustment: function(height, variance, ratioWeight, func) {
         height      = arg(height, this.max() * 0.1);

@@ -159,4 +159,46 @@
         },
         label: 'adjustEvery(10, ...)'
     });
+
+    display({
+        heightmap: hm,
+        transform: function(hm) {
+            hm.smoothStartHeight(50, 100);
+        },
+        label: 'smoothStartHeight(50, 100)'
+    });
+
+    display({
+        heightmap: hm,
+        transform: function(hm) {
+            hm.smoothStartHeightFromPercent(0.25, 100);
+        },
+        label: 'smoothStartHeightFromPercent(0.25, 100)'
+    });
+
+    display({
+        heightmap: hm,
+        transform: function(hm) {
+            hm.smoothEndHeight(hm.data.length - 50, 100);
+        },
+        label: 'smoothEndHeight(hm.data.length - 50, 100)'
+    });
+
+    display({
+        heightmap: hm,
+        transform: function(hm) {
+            hm.smoothEndHeightFromPercent(0.75, 100);
+        },
+        label: 'smoothEndHeightFromPercent(0.75, 100)'
+    });
+
+    display({
+        heightmap: hm,
+        transform: function(hm) {
+            hm.scaleHeightToMinMax(60, 130);
+        },
+        label: 'scaleHeightToMinMax(60, 130)'
+    });
+
+
 }());
