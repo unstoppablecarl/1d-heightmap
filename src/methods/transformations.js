@@ -6,11 +6,11 @@ var makeArray          = util.makeArray;
 var sliceRelativeRange = util.sliceRelativeRange;
 var arrayChunk         = util.arrayChunk;
 
-var rng                 = require('../rng');
-var random              = rng.float;
+var rng                    = require('../rng');
+var random                 = rng.float;
 var randomRangeInt         = rng.rangeInt;
-var randomSpacedIndexes = rng.spacedIndexes;
-var randomMinMaxRangeValue    = rng.minMaxRangeValue;
+var randomSpacedIndexes    = rng.spacedIndexes;
+var randomMinMaxRangeValue = rng.minMaxRangeValue;
 
 var methods = {
     /* adjustments */
@@ -67,7 +67,7 @@ var methods = {
         })
     },
 
-    trimHeight: function(){
+    trimHeight: function() {
         var min = this.min();
         return this.subtract(min);
     },
@@ -106,6 +106,13 @@ var methods = {
     scaleHeightTo: function(maxHeight) {
         var ratio = maxHeight / this.max();
         return this.multiply(ratio);
+    },
+    scaleHeightToMinMax: function(minHeight, maxHeight) {
+        this.trimHeight();
+        this.scaleHeightTo(maxHeight);
+        this.add(minHeight);
+        
+        return this;
     },
     scaleLengthTo: function(newLenght, interpolateFunc) {
         var data      = this.data;
@@ -291,7 +298,7 @@ var methods = {
     distortChunk: function(startIndex, endIndex, weight) {
         var values = arrayChunk(this.data, startIndex, endIndex);
 
-        return this.adjustBetween(startIndex, endIndex, function(val, i, data){
+        return this.adjustBetween(startIndex, endIndex, function(val, i, data) {
             return randomMinMaxRangeValue(values, val, weight);
         });
     },
